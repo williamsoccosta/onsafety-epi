@@ -133,3 +133,18 @@ body {
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.01em;
 }
+
+
+/* ---- Print styles: ficha de EPI ---- */
+@media print {
+  aside { display: none !important; }
+  .print\:hidden { display: none !important; }
+  body { background: white !important; color: black !important; }
+  main { padding: 24px !important; }
+  [style*="--canvas"] { background: white !important; }
+  [style*="--surface"] { background: white !important; }
+  [style*="--surface-raised"] { background: white !important; }
+  [style*="--surface-2"] { background: #f5f5f5 !important; }
+  table { page-break-inside: auto; }
+  tr { page-break-inside: avoid; }
+}
