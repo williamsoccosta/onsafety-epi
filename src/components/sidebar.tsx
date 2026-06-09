@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 const ITENS = [
   { href: "/colaboradores", label: "Colaboradores", marca: "C" },
   { href: "/obras", label: "Obras", marca: "O" },
+  { href: "/ca", label: "Consulta CA", marca: "CA" },
 ];
 
 export function Sidebar() {
@@ -42,7 +43,7 @@ export function Sidebar() {
         >
           Cadastros
         </p>
-        {ITENS.map((item) => {
+        {ITENS.slice(0, 2).map((item) => {
           const active = pathname?.startsWith(item.href);
           return (
             <Link
@@ -61,6 +62,41 @@ export function Sidebar() {
                 style={{
                   background: active ? "var(--accent-soft)" : "var(--surface-2)",
                   color: active ? "var(--accent)" : "var(--ink-tertiary)",
+                }}
+              >
+                {item.marca}
+              </span>
+              {item.label}
+            </Link>
+          );
+        })}
+
+        <p
+          className="px-2.5 pt-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.14em]"
+          style={{ color: "var(--ink-muted)" }}
+        >
+          Consultas
+        </p>
+        {ITENS.slice(2).map((item) => {
+          const active = pathname?.startsWith(item.href);
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="group flex items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] transition-colors"
+              style={{
+                background: active ? "var(--surface)" : "transparent",
+                color: active ? "var(--ink)" : "var(--ink-secondary)",
+                border: active ? "1px solid var(--line)" : "1px solid transparent",
+                fontWeight: active ? 600 : 500,
+              }}
+            >
+              <span
+                className="flex h-5 w-5 items-center justify-center rounded text-[10px] font-semibold tabular"
+                style={{
+                  background: active ? "var(--accent-soft)" : "var(--surface-2)",
+                  color: active ? "var(--accent)" : "var(--ink-tertiary)",
+                  fontSize: "9px",
                 }}
               >
                 {item.marca}
