@@ -1,26 +1,135 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Canvas -- concreto morno, nao branco frio de SaaS */
+  --canvas: #eeece7;
+  --surface: #f8f7f4;
+  --surface-2: #e7e4dd;     /* inputs -- "inset", recebem conteudo */
+  --surface-raised: #fcfbf9; /* dropdowns, popovers -- 1 nivel acima */
+
+  /* Texto -- hierarquia de 4 niveis */
+  --ink: #2a2722;
+  --ink-secondary: #5c574e;
+  --ink-tertiary: #8b8579;
+  --ink-muted: #b3ada1;
+
+  /* Bordas -- progressao de intensidade, rgba sobre o canvas */
+  --line: rgba(42, 39, 34, 0.10);
+  --line-soft: rgba(42, 39, 34, 0.06);
+  --line-strong: rgba(42, 39, 34, 0.22);
+  --line-focus: rgba(180, 95, 6, 0.55);
+
+  /* Acento -- amarelo-seguranca / ambar de canteiro. Um so. */
+  --accent: #b45f06;
+  --accent-ink: #fffaf0;
+  --accent-soft: rgba(180, 95, 6, 0.12);
+
+  /* Semantico -- cores que existem no canteiro: extintor, advertencia, mato */
+  --danger: #a3321f;
+  --danger-soft: rgba(163, 50, 31, 0.10);
+  --success: #5b6b3a;
+  --success-soft: rgba(91, 107, 58, 0.12);
+
+  /* Controles */
+  --control-bg: #e7e4dd;
+  --control-border: rgba(42, 39, 34, 0.16);
+  --control-border-hover: rgba(42, 39, 34, 0.30);
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+* {
+  border-color: var(--line);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: light;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--canvas);
+  color: var(--ink);
+  font-feature-settings: "ss01" on, "cv01" on;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- Selo: etiqueta de Certificado de Aprovacao -- elemento assinatura ---- */
+.selo {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+  padding: 6px 10px 6px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--line-strong);
+  background: var(--surface);
+  color: var(--ink-secondary);
+  transition: border-color 150ms ease, color 150ms ease, background-color 150ms ease;
+}
+
+/* furo de perfuracao -- como a etiqueta costurada no EPI */
+.selo::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--canvas);
+  box-shadow: 0 0 0 1px var(--line-strong);
+}
+
+.selo--ok {
+  border-color: rgba(91, 107, 58, 0.4);
+  background: var(--success-soft);
+  color: var(--success);
+}
+.selo--ok::before { box-shadow: 0 0 0 1px rgba(91, 107, 58, 0.45); }
+
+.selo--off {
+  border-color: var(--line-strong);
+  background: var(--surface-2);
+  color: var(--ink-tertiary);
+}
+
+.selo--alert {
+  border-color: rgba(163, 50, 31, 0.4);
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.selo--alert::before { box-shadow: 0 0 0 1px rgba(163, 50, 31, 0.45); }
+
+.selo-btn {
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  padding: 0;
+}
+.selo-btn .selo:hover {
+  border-color: var(--line-focus);
+  color: var(--ink);
+}
+
+/* ---- tipografia tabular para matricula / CA / datas ---- */
+.tabular {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
 }
