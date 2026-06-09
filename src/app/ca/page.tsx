@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { CabecalhoPagina } from "@/components/page-header";
 import { Selo } from "@/components/selo";
+import { FiltroColuna } from "@/components/filtro-coluna";
+import { Suspense } from "react";
 
 export const dynamic = "force-dynamic";
 
@@ -27,10 +29,16 @@ function formatarCNPJ(cnpj: string) {
 export default async function ConsultaCAPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; vencidos?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    equipamento?: string;
+    natureza?: string;
+    cnpj?: string;
+    situacao?: string;
+    validade?: string;
+  }>;
 }) {
-  const { q, vencidos: vencidosParam } = await searchParams;
-  const apenasVencidos = vencidosParam === "1";
+  const { q, equipamento, natureza, cnpj, situacao, validade } = await searchParams;
 
   const supabase = await createClient();
 
@@ -47,17 +55,50 @@ export default async function ConsultaCAPage({
     if (!isNaN(termo)) query = query.eq("ca", termo);
   }
 
-  if (apenasVencidos) {
-    query = query.eq("situacao", "VENCIDO");
+  if (equipamento?.trim()) query = query.ilike("nome_equipamento", `%${equipamento.trim()}%`);
+  if (natureza?.trim())    query = query.eq("natureza", natureza.trim());
+  if (cnpj?.trim())        query = query.ilike("cnpj_fabricante", `%${cnpj.trim()}%`);
+  if (situacao?.trim())    query = query.eq("situacao", situacao.trim());
+  if (validade?.trim()) {
+    query = query
+      .gte("data_validade", `${validade.trim()}-01-01`)
+      .lte("data_validade", `${validade.trim()}-12-31`);
   }
 
-  const { data, error, count } = await query.order("ca").limit(50);
+  const [{ data, error, count }, { data: naturezaData }, { data: validadeData }] = await Promise.all([
+    query.order("ca").limit(50),
+    supabase
+      .schema("catalogo")
+      .from("fichas_tecnicas")
+      .select("natureza")
+      .not("natureza", "is", null)
+      .order("natureza"),
+    supabase
+      .schema("catalogo")
+      .from("fichas_tecnicas")
+      .select("data_validade")
+      .not("data_validade", "is", null),
+  ]);
 
   const fichas: FichaTecnica[] = (data as FichaTecnica[]) ?? [];
   const total = count ?? 0;
   const erro = error?.message ?? null;
 
-  const temFiltroAtivo = (q && q.trim()) || apenasVencidos;
+  const naturezaOpcoes = [
+    ...new Set(
+      (naturezaData ?? []).map((r) => (r as { natureza: string }).natureza).filter(Boolean)
+    ),
+  ];
+
+  const validadeOpcoes = [
+    ...new Set(
+      (validadeData ?? [])
+        .map((r) => (r as { data_validade: string }).data_validade?.substring(0, 4))
+        .filter(Boolean)
+    ),
+  ].sort() as string[];
+
+  const temFiltroAtivo = (q && q.trim()) || equipamento || natureza || cnpj || situacao || validade;
 
   return (
     <main>
@@ -90,20 +131,6 @@ export default async function ConsultaCAPage({
             />
           </div>
 
-          <label className="flex items-center gap-2 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              name="vencidos"
-              value="1"
-              defaultChecked={apenasVencidos}
-              className="w-4 h-4 rounded"
-              style={{ accentColor: "var(--danger)" }}
-            />
-            <span className="text-[13px]" style={{ color: "var(--ink-secondary)" }}>
-              Apenas vencidos
-            </span>
-          </label>
-
           <button
             type="submit"
             className="h-[38px] px-5 rounded-md text-[13px] font-semibold transition-opacity hover:opacity-90 shrink-0"
@@ -128,16 +155,53 @@ export default async function ConsultaCAPage({
           </p>
         )}
 
-        <section className="rounded-lg border overflow-hidden" style={{ borderColor: "var(--line)" }}>
-          <table className="w-full text-[13px] border-collapse">
+        <section className="rounded-lg border" style={{ borderColor: "var(--line)", overflow: "visible" }}>
+          <table className="w-full text-[13px] border-collapse" style={{ borderRadius: 8, overflow: "hidden" }}>
             <thead>
-              <tr style={{ background: "var(--surface)", borderBottom: "1px solid var(--line)" }}>
+              <tr style={{ background: "var(--surface)", borderBottom: "1px solid var(--line)", overflow: "visible" }}>
                 <Th>CA</Th>
-                <Th>Equipamento</Th>
-                <Th>Validade</Th>
-                <Th>Natureza</Th>
-                <Th>CNPJ Fabricante</Th>
-                <Th align="right">Situação</Th>
+                <Suspense fallback={<Th>Equipamento</Th>}>
+                  <FiltroColuna
+                    rotulo="Equipamento"
+                    parametro="equipamento"
+                    modo="texto"
+                    placeholder="ex: capacete"
+                  />
+                </Suspense>
+                <Suspense fallback={<Th>Validade</Th>}>
+                  <FiltroColuna
+                    rotulo="Validade"
+                    parametro="validade"
+                    modo="opcoes"
+                    opcoes={validadeOpcoes}
+                    placeholder="ex: 2027"
+                  />
+                </Suspense>
+                <Suspense fallback={<Th>Natureza</Th>}>
+                  <FiltroColuna
+                    rotulo="Natureza"
+                    parametro="natureza"
+                    modo="opcoes"
+                    opcoes={naturezaOpcoes}
+                  />
+                </Suspense>
+                <Suspense fallback={<Th>CNPJ Fabricante</Th>}>
+                  <FiltroColuna
+                    rotulo="CNPJ Fabricante"
+                    parametro="cnpj"
+                    modo="texto"
+                    placeholder="ex: 12.345"
+                  />
+                </Suspense>
+                <Suspense fallback={<Th align="right">Situação</Th>}>
+                  <FiltroColuna
+                    rotulo="Situação"
+                    parametro="situacao"
+                    modo="opcoes"
+                    opcoes={["VALIDO", "VENCIDO"]}
+                    align="right"
+                  />
+                </Suspense>
               </tr>
             </thead>
             <tbody>
