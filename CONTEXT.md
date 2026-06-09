@@ -35,6 +35,26 @@ Trabalhador que recebe EPIs. Identificado por nome, matrícula e função. Cada 
 
 ---
 
+## Deploy e infraestrutura
+
+- **VPS**: `root@187.77.234.21` — chave SSH local em `~/.ssh/id_ed25519_hostinger`
+- **Projeto na VPS**: `/root/onsafety-epi`
+- **Processo**: PM2 (`onsafety-epi`, id 0), rodando `npm run start` (modo produção)
+
+### Fluxo de deploy
+O git é a fonte de verdade. Nunca editar arquivos diretamente na VPS — mudanças não commitadas causam conflitos no próximo `git pull`.
+
+```bash
+# Localmente:
+git add <arquivos> && git commit -m "..." && git push origin main
+
+# Na VPS:
+ssh -i ~/.ssh/id_ed25519_hostinger root@187.77.234.21 \
+  "cd /root/onsafety-epi && git pull origin main && npm install && npm run build && pm2 restart all"
+```
+
+---
+
 ## Decisões de design
 
 ### Agrupamento de obras por cliente
