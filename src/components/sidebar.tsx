@@ -3,11 +3,42 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const ITENS = [
+const CADASTROS = [
   { href: "/colaboradores", label: "Colaboradores", marca: "C" },
   { href: "/obras", label: "Obras", marca: "O" },
+  { href: "/epis", label: "Catalogo EPI", marca: "E" },
+];
+
+const CONSULTAS = [
   { href: "/ca", label: "Consulta CA", marca: "CA" },
 ];
+
+function NavItem({ href, label, marca, active }: { href: string; label: string; marca: string; active: boolean }) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] transition-colors"
+      style={{
+        background: active ? "var(--surface)" : "transparent",
+        color: active ? "var(--ink)" : "var(--ink-secondary)",
+        border: active ? "1px solid var(--line)" : "1px solid transparent",
+        fontWeight: active ? 600 : 500,
+      }}
+    >
+      <span
+        className="flex h-5 shrink-0 items-center justify-center rounded text-[9px] font-semibold"
+        style={{
+          width: marca.length > 1 ? "24px" : "20px",
+          background: active ? "var(--accent-soft)" : "var(--surface-2)",
+          color: active ? "var(--accent)" : "var(--ink-tertiary)",
+        }}
+      >
+        {marca}
+      </span>
+      {label}
+    </Link>
+  );
+}
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -37,79 +68,24 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-0.5">
-        <p
-          className="px-2.5 pb-2 text-[10px] font-semibold uppercase tracking-[0.14em]"
-          style={{ color: "var(--ink-muted)" }}
-        >
+        <p className="px-2.5 pb-2 text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--ink-muted)" }}>
           Cadastros
         </p>
-        {ITENS.slice(0, 2).map((item) => {
-          const active = pathname?.startsWith(item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="group flex items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] transition-colors"
-              style={{
-                background: active ? "var(--surface)" : "transparent",
-                color: active ? "var(--ink)" : "var(--ink-secondary)",
-                border: active ? "1px solid var(--line)" : "1px solid transparent",
-                fontWeight: active ? 600 : 500,
-              }}
-            >
-              <span
-                className="flex h-5 w-5 items-center justify-center rounded text-[10px] font-semibold tabular"
-                style={{
-                  background: active ? "var(--accent-soft)" : "var(--surface-2)",
-                  color: active ? "var(--accent)" : "var(--ink-tertiary)",
-                }}
-              >
-                {item.marca}
-              </span>
-              {item.label}
-            </Link>
-          );
-        })}
+        {CADASTROS.map((item) => (
+          <NavItem key={item.href} {...item} active={!!pathname?.startsWith(item.href)} />
+        ))}
 
-        <p
-          className="px-2.5 pt-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.14em]"
-          style={{ color: "var(--ink-muted)" }}
-        >
+        <p className="px-2.5 pt-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--ink-muted)" }}>
           Consultas
         </p>
-        {ITENS.slice(2).map((item) => {
-          const active = pathname?.startsWith(item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="group flex items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] transition-colors"
-              style={{
-                background: active ? "var(--surface)" : "transparent",
-                color: active ? "var(--ink)" : "var(--ink-secondary)",
-                border: active ? "1px solid var(--line)" : "1px solid transparent",
-                fontWeight: active ? 600 : 500,
-              }}
-            >
-              <span
-                className="flex h-5 w-5 items-center justify-center rounded text-[10px] font-semibold tabular"
-                style={{
-                  background: active ? "var(--accent-soft)" : "var(--surface-2)",
-                  color: active ? "var(--accent)" : "var(--ink-tertiary)",
-                  fontSize: "9px",
-                }}
-              >
-                {item.marca}
-              </span>
-              {item.label}
-            </Link>
-          );
-        })}
+        {CONSULTAS.map((item) => (
+          <NavItem key={item.href} {...item} active={!!pathname?.startsWith(item.href)} />
+        ))}
       </nav>
 
       <div className="px-5 py-4 border-t" style={{ borderColor: "var(--line-soft)" }}>
         <p className="text-[11px] leading-relaxed" style={{ color: "var(--ink-muted)" }}>
-          Painel interno - uso restrito a operadores de almoxarifado.
+          Painel interno — operadores de almoxarifado.
         </p>
       </div>
     </aside>
