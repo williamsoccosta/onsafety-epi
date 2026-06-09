@@ -9,6 +9,10 @@ const CADASTROS = [
   { href: "/epis", label: "Catalogo EPI", marca: "E" },
 ];
 
+const OPERACOES = [
+  { href: "/movimentacoes", label: "Movimentacoes", marca: "M" },
+];
+
 const CONSULTAS = [
   { href: "/ca", label: "Consulta CA", marca: "CA" },
 ];
@@ -40,6 +44,19 @@ function NavItem({ href, label, marca, active }: { href: string; label: string; 
   );
 }
 
+function NavGroup({ label, items, pathname }: { label: string; items: typeof CADASTROS; pathname: string | null }) {
+  return (
+    <>
+      <p className="px-2.5 pt-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.14em] first:pt-0" style={{ color: "var(--ink-muted)" }}>
+        {label}
+      </p>
+      {items.map((item) => (
+        <NavItem key={item.href} {...item} active={!!pathname?.startsWith(item.href)} />
+      ))}
+    </>
+  );
+}
+
 export function Sidebar() {
   const pathname = usePathname();
 
@@ -57,30 +74,16 @@ export function Sidebar() {
             CA
           </span>
           <div className="leading-tight">
-            <p className="text-[13px] font-semibold tracking-tight" style={{ color: "var(--ink)" }}>
-              Onsafety EPI
-            </p>
-            <p className="text-[11px]" style={{ color: "var(--ink-tertiary)" }}>
-              FAAB Engenharia
-            </p>
+            <p className="text-[13px] font-semibold tracking-tight" style={{ color: "var(--ink)" }}>Onsafety EPI</p>
+            <p className="text-[11px]" style={{ color: "var(--ink-tertiary)" }}>FAAB Engenharia</p>
           </div>
         </div>
       </div>
 
-      <nav className="flex-1 px-3 py-4 space-y-0.5">
-        <p className="px-2.5 pb-2 text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--ink-muted)" }}>
-          Cadastros
-        </p>
-        {CADASTROS.map((item) => (
-          <NavItem key={item.href} {...item} active={!!pathname?.startsWith(item.href)} />
-        ))}
-
-        <p className="px-2.5 pt-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--ink-muted)" }}>
-          Consultas
-        </p>
-        {CONSULTAS.map((item) => (
-          <NavItem key={item.href} {...item} active={!!pathname?.startsWith(item.href)} />
-        ))}
+      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+        <NavGroup label="Cadastros" items={CADASTROS} pathname={pathname} />
+        <NavGroup label="Operacoes" items={OPERACOES} pathname={pathname} />
+        <NavGroup label="Consultas" items={CONSULTAS} pathname={pathname} />
       </nav>
 
       <div className="px-5 py-4 border-t" style={{ borderColor: "var(--line-soft)" }}>
