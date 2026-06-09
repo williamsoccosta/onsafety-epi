@@ -43,8 +43,8 @@ export default async function ConsultaCAPage({
     );
 
   if (q && q.trim()) {
-    const termo = q.trim().replace(/\D/g, "");
-    query = query.ilike("ca::text", `%${termo}%`);
+    const termo = parseInt(q.trim().replace(/\D/g, ""), 10);
+    if (!isNaN(termo)) query = query.eq("ca", termo);
   }
 
   if (apenasVencidos) {
