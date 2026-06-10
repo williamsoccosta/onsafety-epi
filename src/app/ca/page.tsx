@@ -155,8 +155,9 @@ export default async function ConsultaCAPage({
           </p>
         )}
 
-        <section className="rounded-lg border" style={{ borderColor: "var(--line)", overflow: "visible" }}>
-          <table className="w-full text-[13px] border-collapse" style={{ borderRadius: 8, overflow: "hidden" }}>
+        <section className="rounded-lg border" style={{ borderColor: "var(--line)" }}>
+          <div className="overflow-x-auto">
+          <table className="w-full text-[13px] border-collapse" style={{ borderRadius: 8 }}>
             <thead>
               <tr style={{ background: "var(--surface)", borderBottom: "1px solid var(--line)", overflow: "visible" }}>
                 <Th>CA</Th>
@@ -265,6 +266,7 @@ export default async function ConsultaCAPage({
               )}
             </tbody>
           </table>
+          </div>
         </section>
 
         {fichas.length === 50 && (

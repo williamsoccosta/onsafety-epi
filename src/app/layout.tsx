@@ -26,7 +26,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={`${display.variable} ${mono.variable} antialiased`} style={{ fontFamily: "var(--font-display), sans-serif" }}>
-        <div className="flex min-h-screen">
+        <div className="flex min-h-screen overflow-x-hidden">
           <Sidebar />
           <div className="flex-1 min-w-0">{children}</div>
         </div>
