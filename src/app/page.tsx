@@ -114,7 +114,7 @@ export default async function Dashboard() {
   }
 
   return (
-    <main className="px-8 py-8 max-w-5xl">
+    <main className="px-4 sm:px-8 py-6 sm:py-8 max-w-5xl">
       {/* Saudacao */}
       <div className="mb-8">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] mb-1"
@@ -130,7 +130,7 @@ export default async function Dashboard() {
       </div>
 
       {/* Metricas */}
-      <div className="grid grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
         <MetricCard rotulo="Colaboradores ativos" valor={totalColabs ?? 0} href="/colaboradores" cor="var(--accent)" />
         <MetricCard rotulo="EPIs cadastrados" valor={totalEPIs ?? 0} href="/epis" cor="var(--success)" />
         <MetricCard rotulo="Movimentacoes" valor={totalMovs ?? 0} href="/movimentacoes" cor="var(--ink-secondary)" />
@@ -186,7 +186,7 @@ export default async function Dashboard() {
       </section>
 
       {/* Indicadores */}
-      <div className="grid grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <section>
           <p className="text-[11px] font-semibold uppercase tracking-[0.12em] mb-3"
             style={{ color: "var(--ink-tertiary)" }}>
@@ -249,7 +249,7 @@ export default async function Dashboard() {
         </div>
       </section>
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Movimentacoes recentes */}
         <section>
           <div className="flex items-center justify-between mb-3">

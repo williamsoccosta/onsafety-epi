@@ -2,8 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { requirePerfil } from "@/lib/auth";
 
 export async function criarColaborador(formData: FormData) {
+  await requirePerfil("supervisor", "administrativo");
   const supabase = await createClient();
 
   const nome = String(formData.get("nome") || "").trim();
@@ -28,6 +30,7 @@ export async function criarColaborador(formData: FormData) {
 
 export async function alternarAtivo(id: string, ativo: boolean) {
   "use server";
+  await requirePerfil("supervisor", "administrativo");
   const supabase = await createClient();
   await supabase.schema("epi").from("colaboradores").update({ ativo: !ativo }).eq("id", id);
   revalidatePath("/colaboradores");

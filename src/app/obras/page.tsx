@@ -72,7 +72,7 @@ export default async function ObrasPage({
         rotulo="cadastradas"
       />
 
-      <div className="px-8 py-6 space-y-6">
+      <div className="px-4 sm:px-8 py-6 space-y-6">
         <section
           className="rounded-lg border p-5"
           style={{ borderColor: "var(--line)", background: "var(--surface)" }}
@@ -88,7 +88,7 @@ export default async function ObrasPage({
               <option key={c} value={c} />
             ))}
           </datalist>
-          <form action={action} className="grid grid-cols-4 gap-3">
+          <form action={action} className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <Campo
               label="Nome da obra"
               name="nome"
@@ -161,7 +161,7 @@ export default async function ObrasPage({
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {obrasVisiveis.map((o) => (
                     <article
                       key={o.id}

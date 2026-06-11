@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { requirePerfil } from "@/lib/auth";
 
 export async function loginAction(formData: FormData) {
   const email = String(formData.get("email") || "").trim();
@@ -28,6 +29,7 @@ export async function salvarAssinatura(
   colaboradorId: string,
   assinaturaUrl: string
 ) {
+  await requirePerfil("supervisor", "almoxarife");
   const supabase = await createClient();
   const { error } = await supabase
     .schema("epi")
@@ -41,6 +43,7 @@ export async function salvarAssinatura(
 }
 
 export async function apagarAssinatura(movimentacaoId: string, colaboradorId: string) {
+  await requirePerfil("supervisor", "almoxarife");
   const supabase = await createClient();
   const { error } = await supabase
     .schema("epi")

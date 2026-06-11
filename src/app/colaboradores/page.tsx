@@ -35,7 +35,7 @@ export default async function ColaboradoresPage() {
         rotulo="cadastrados"
       />
 
-      <div className="px-8 py-6 space-y-6">
+      <div className="px-4 sm:px-8 py-6 space-y-6">
         <section
           className="rounded-lg border p-5"
           style={{ borderColor: "var(--line)", background: "var(--surface)" }}
@@ -43,7 +43,7 @@ export default async function ColaboradoresPage() {
           <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: "var(--ink-tertiary)" }}>
             Novo cadastro
           </p>
-          <form action={action} className="grid grid-cols-4 gap-3">
+          <form action={action} className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <Campo label="Nome completo" name="nome" placeholder="Ex: Joao da Silva" className="col-span-2" />
             <Campo label="Funcao" name="funcao" placeholder="Ex: Pedreiro" />
             <Campo label="Matricula" name="matricula" placeholder="Ex: 0231" mono />
@@ -66,8 +66,8 @@ export default async function ColaboradoresPage() {
           </p>
         )}
 
-        <section className="rounded-lg border overflow-hidden" style={{ borderColor: "var(--line)" }}>
-          <table className="w-full text-[13px] border-collapse">
+        <section className="rounded-lg border overflow-x-auto" style={{ borderColor: "var(--line)" }}>
+          <table className="w-full min-w-[640px] text-[13px] border-collapse">
             <thead>
               <tr style={{ background: "var(--surface)", borderBottom: "1px solid var(--line)" }}>
                 <Th>Nome</Th>

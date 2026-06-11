@@ -1,7 +1,8 @@
 "use client";
 
-import { useRef, useState, useCallback, useEffect } from "react";
+import { useRef, useState } from "react";
 import { registrarEntregaComAssinatura } from "../actions";
+import { useSignatureCanvas } from "@/hooks/useSignatureCanvas";
 
 type Obra  = { id: string; nome: string };
 type EPI   = { id: string; nome: string; complemento: string | null; ca: number | null };
@@ -11,13 +12,10 @@ type ItemEntrega = { epi_id: string; quantidade: number };
 export function EntregaForm({
   obras, epis, colaboradores,
 }: { obras: Obra[]; epis: EPI[]; colaboradores: Colab[] }) {
-  const canvasRef     = useRef<HTMLCanvasElement>(null);
-  const lastPt        = useRef<{ x: number; y: number } | null>(null);
+  const { canvasRef, empty, clear } = useSignatureCanvas({ strokeStyle: "#111111", lineWidth: 2 });
   const assinaturaRef = useRef<string>("");
 
   const [itens, setItens]       = useState<ItemEntrega[]>([{ epi_id: "", quantidade: 1 }]);
-  const [drawing,  setDrawing]  = useState(false);
-  const [empty,    setEmpty]    = useState(true);
   const [assinado, setAssinado] = useState(false);
   const [erro,     setErro]     = useState<string | null>(null);
   const [loading,  setLoading]  = useState(false);
@@ -38,95 +36,8 @@ export function EntregaForm({
     setItens((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev));
   }
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = "#111111";
-    ctx.lineWidth = 2;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-  }, []);
-
-  function getPos(e: MouseEvent | TouchEvent, canvas: HTMLCanvasElement) {
-    const rect = canvas.getBoundingClientRect();
-    const sx = canvas.width / rect.width;
-    const sy = canvas.height / rect.height;
-    if ("touches" in e && e.touches.length > 0) {
-      return {
-        x: (e.touches[0].clientX - rect.left) * sx,
-        y: (e.touches[0].clientY - rect.top) * sy,
-      };
-    }
-    const me = e as MouseEvent;
-    return { x: (me.clientX - rect.left) * sx, y: (me.clientY - rect.top) * sy };
-  }
-
-  const startDraw = useCallback((e: MouseEvent | TouchEvent) => {
-    e.preventDefault();
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    setDrawing(true);
-    setEmpty(false);
-    setAssinado(false);
-    lastPt.current = getPos(e, canvas);
-  }, []);
-
-  const draw = useCallback(
-    (e: MouseEvent | TouchEvent) => {
-      e.preventDefault();
-      if (!drawing) return;
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const ctx = canvas.getContext("2d");
-      if (!ctx || !lastPt.current) return;
-      const pt = getPos(e, canvas);
-      ctx.beginPath();
-      ctx.moveTo(lastPt.current.x, lastPt.current.y);
-      ctx.lineTo(pt.x, pt.y);
-      ctx.stroke();
-      lastPt.current = pt;
-    },
-    [drawing]
-  );
-
-  const stopDraw = useCallback(() => {
-    setDrawing(false);
-    lastPt.current = null;
-  }, []);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    canvas.addEventListener("mousedown",  startDraw);
-    canvas.addEventListener("mousemove",  draw);
-    canvas.addEventListener("mouseup",    stopDraw);
-    canvas.addEventListener("mouseleave", stopDraw);
-    canvas.addEventListener("touchstart", startDraw, { passive: false });
-    canvas.addEventListener("touchmove",  draw,      { passive: false });
-    canvas.addEventListener("touchend",   stopDraw);
-    return () => {
-      canvas.removeEventListener("mousedown",  startDraw);
-      canvas.removeEventListener("mousemove",  draw);
-      canvas.removeEventListener("mouseup",    stopDraw);
-      canvas.removeEventListener("mouseleave", stopDraw);
-      canvas.removeEventListener("touchstart", startDraw);
-      canvas.removeEventListener("touchmove",  draw);
-      canvas.removeEventListener("touchend",   stopDraw);
-    };
-  }, [startDraw, draw, stopDraw]);
-
   function limpar() {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    setEmpty(true);
+    clear();
     setAssinado(false);
     assinaturaRef.current = "";
   }
@@ -176,7 +87,7 @@ export function EntregaForm({
           Dados da entrega
         </p>
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <Field label="Motivo" name="motivo" required>
             <option value="Entrega">Entrega</option>
             <option value="Substituicao">Substituicao</option>
@@ -323,6 +234,8 @@ export function EntregaForm({
           ref={canvasRef}
           width={600}
           height={160}
+          onMouseDown={() => setAssinado(false)}
+          onTouchStart={() => setAssinado(false)}
           className="w-full rounded-md border touch-none"
           style={{
             borderColor: assinado ? "#16a34a" : "var(--line)",

@@ -4,12 +4,19 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { requirePerfil } from "@/lib/auth";
+import { SAIDA, MOTIVOS_BALCAO } from "@/lib/constants";
 
-const SAIDA = ["Entrega", "Devolucao", "Substituicao"];
-// Motivos do fluxo de balcao — exigem assinatura do colaborador
-const MOTIVOS_BALCAO = ["Entrega", "Substituicao"];
+const MAX_ASSINATURA_BYTES = 2 * 1024 * 1024; // 2 MB — assinatura real tem dezenas de KB
+
+// Confirma que o buffer comeca com o magic number de PNG (89 50 4E 47).
+function ehPng(buf: Buffer): boolean {
+  return buf.length >= 4 &&
+    buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47;
+}
 
 export async function registrarMovimentacao(formData: FormData) {
+  await requirePerfil("supervisor", "almoxarife");
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -38,6 +45,7 @@ export async function registrarMovimentacao(formData: FormData) {
 }
 
 export async function registrarEntregaComAssinatura(formData: FormData) {
+  await requirePerfil("supervisor", "almoxarife");
   const supabase = await createClient();
   const admin    = createAdminClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -59,7 +67,11 @@ export async function registrarEntregaComAssinatura(formData: FormData) {
 
   let itens: { epi_id: string; quantidade: number }[];
   try {
-    itens = JSON.parse(itensJson);
+    const parsed = JSON.parse(itensJson);
+    if (!Array.isArray(parsed)) {
+      return { error: "Lista de itens invalida." };
+    }
+    itens = parsed;
   } catch {
     return { error: "Lista de itens invalida." };
   }
@@ -73,6 +85,12 @@ export async function registrarEntregaComAssinatura(formData: FormData) {
   try {
     const b64 = assinaturaB64.replace(/^data:image\/png;base64,/, "");
     const buf = Buffer.from(b64, "base64");
+    if (buf.length === 0 || buf.length > MAX_ASSINATURA_BYTES) {
+      return { error: "Assinatura invalida ou muito grande." };
+    }
+    if (!ehPng(buf)) {
+      return { error: "Assinatura em formato invalido." };
+    }
     const storagePath = `${colaborador_id}/${loteId}.png`;
     await admin.storage.from("assinaturas").upload(storagePath, buf, {
       contentType: "image/png",

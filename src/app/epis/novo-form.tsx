@@ -49,7 +49,7 @@ export function NovoEPIForm() {
         Novo EPI
       </p>
       <form ref={formRef} action={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {/* CA input com lookup */}
           <label className="flex flex-col gap-1.5">
             <span className="text-[11px] font-medium uppercase tracking-[0.08em]" style={{ color: "var(--ink-tertiary)" }}>
@@ -116,7 +116,7 @@ export function NovoEPIForm() {
           </label>
         </div>
 
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <label className="flex flex-col gap-1.5 col-span-2">
             <span className="text-[11px] font-medium uppercase tracking-[0.08em]" style={{ color: "var(--ink-tertiary)" }}>
               Complemento

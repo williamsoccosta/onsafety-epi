@@ -2,8 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { requirePerfil } from "@/lib/auth";
 
 export async function criarObra(formData: FormData) {
+  await requirePerfil("supervisor");
   const supabase = await createClient();
 
   const nome = String(formData.get("nome") || "").trim();
@@ -24,6 +26,7 @@ export async function criarObra(formData: FormData) {
 
 export async function alternarAtiva(id: string, ativa: boolean) {
   "use server";
+  await requirePerfil("supervisor");
   const supabase = await createClient();
   await supabase.schema("obras").from("obras").update({ ativa: !ativa }).eq("id", id);
   revalidatePath("/obras");

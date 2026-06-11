@@ -35,7 +35,7 @@ export default async function EPIsPage() {
         rotulo="itens"
       />
 
-      <div className="px-8 py-6 space-y-6">
+      <div className="px-4 sm:px-8 py-6 space-y-6">
         <NovoEPIForm />
 
         {error && (
@@ -44,8 +44,8 @@ export default async function EPIsPage() {
           </p>
         )}
 
-        <section className="rounded-lg border overflow-hidden" style={{ borderColor: "var(--line)" }}>
-          <table className="w-full text-[13px] border-collapse">
+        <section className="rounded-lg border overflow-x-auto" style={{ borderColor: "var(--line)" }}>
+          <table className="w-full min-w-[760px] text-[13px] border-collapse">
             <thead>
               <tr style={{ background: "var(--surface)", borderBottom: "1px solid var(--line)" }}>
                 <Th>Equipamento</Th>

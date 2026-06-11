@@ -2,9 +2,7 @@
 
 import { useState } from "react";
 import { registrarMovimentacao } from "./actions";
-
-const MOTIVOS = ["Entrada", "Quantidade Inicial", "Entrega", "Substituicao", "Devolucao"];
-const SAIDA = ["Entrega", "Devolucao", "Substituicao"];
+import { MOTIVOS, SAIDA } from "@/lib/constants";
 
 type Obra = { id: string; nome: string };
 type EPI = { id: string; nome: string; complemento: string | null; ca: string | null };
@@ -50,7 +48,7 @@ export function MovForm({
       </p>
 
       <form action={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <Select label="Obra" name="obra_id" required>
             <option value="">Selecione...</option>
             {obras.map((o) => (
@@ -68,7 +66,7 @@ export function MovForm({
           </Select>
         </div>
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <label className="flex flex-col gap-1.5">
             <span className="text-[11px] font-medium uppercase tracking-[0.08em]" style={{ color: "var(--ink-tertiary)" }}>
               Motivo

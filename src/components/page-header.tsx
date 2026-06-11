@@ -11,7 +11,7 @@ export function CabecalhoPagina({
 }) {
   return (
     <header
-      className="flex items-end justify-between px-8 py-6 border-b"
+      className="flex items-end justify-between gap-3 px-4 sm:px-8 py-5 sm:py-6 border-b"
       style={{ borderColor: "var(--line)", background: "var(--surface)" }}
     >
       <div>

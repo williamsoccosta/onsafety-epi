@@ -69,7 +69,7 @@ export default async function MovimentacoesPage() {
         rotulo="registros"
       />
 
-      <div className="px-8 py-6 space-y-8">
+      <div className="px-4 sm:px-8 py-6 space-y-8">
         <MovForm
           obras={obras ?? []}
           epis={epis ?? []}
@@ -90,7 +90,8 @@ export default async function MovimentacoesPage() {
                 >
                   <span className="text-[12px] font-semibold">{grupo.obraNome}</span>
                 </div>
-                <table className="w-full text-[13px] border-collapse">
+                <div className="overflow-x-auto">
+                <table className="w-full min-w-[480px] text-[13px] border-collapse">
                   <tbody>
                     {(grupo.itens ?? []).map((row, i) => {
                       const epi = row.epi_id as unknown as { nome: string; complemento: string | null; ca: string | null };
@@ -128,6 +129,7 @@ export default async function MovimentacoesPage() {
                     })}
                   </tbody>
                 </table>
+                </div>
               </div>
             ))}
           </section>
@@ -138,8 +140,8 @@ export default async function MovimentacoesPage() {
           <p className="text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: "var(--ink-tertiary)" }}>
             Historico recente
           </p>
-          <div className="rounded-lg border overflow-hidden" style={{ borderColor: "var(--line)" }}>
-            <table className="w-full text-[13px] border-collapse">
+          <div className="rounded-lg border overflow-x-auto" style={{ borderColor: "var(--line)" }}>
+            <table className="w-full min-w-[680px] text-[13px] border-collapse">
               <thead>
                 <tr style={{ background: "var(--surface)", borderBottom: "1px solid var(--line)" }}>
                   <Th>Data/hora</Th>

@@ -109,7 +109,7 @@ export default async function ConsultaCAPage({
         rotulo="certificados"
       />
 
-      <div className="px-8 py-6 space-y-6">
+      <div className="px-4 sm:px-8 py-6 space-y-6">
         <form method="GET" className="flex gap-3 items-center flex-wrap">
           <div className="flex-1 relative min-w-[200px]">
             <span
@@ -157,7 +157,7 @@ export default async function ConsultaCAPage({
 
         <section className="rounded-lg border" style={{ borderColor: "var(--line)" }}>
           <div className="overflow-x-auto">
-          <table className="w-full text-[13px] border-collapse" style={{ borderRadius: 8 }}>
+          <table className="w-full min-w-[820px] text-[13px] border-collapse" style={{ borderRadius: 8 }}>
             <thead>
               <tr style={{ background: "var(--surface)", borderBottom: "1px solid var(--line)", overflow: "visible" }}>
                 <Th>CA</Th>

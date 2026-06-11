@@ -80,7 +80,7 @@ export default async function TrocasPage({
         rotulo="itens em campo"
       />
 
-      <div className="px-8 py-6 space-y-4">
+      <div className="px-4 sm:px-8 py-6 space-y-4">
         <div className="flex items-center justify-between">
           <p className="text-[12px]" style={{ color: totalVencidas > 0 ? "var(--danger)" : "var(--ink-muted)" }}>
             {totalVencidas > 0
@@ -101,8 +101,8 @@ export default async function TrocasPage({
           </a>
         </div>
 
-        <section className="rounded-lg border overflow-hidden" style={{ borderColor: "var(--line)" }}>
-          <table className="w-full text-[13px] border-collapse">
+        <section className="rounded-lg border overflow-x-auto" style={{ borderColor: "var(--line)" }}>
+          <table className="w-full min-w-[720px] text-[13px] border-collapse">
             <thead>
               <tr style={{ background: "var(--surface)", borderBottom: "1px solid var(--line)" }}>
                 <Th>Colaborador</Th>

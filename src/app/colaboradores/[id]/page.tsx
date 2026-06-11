@@ -70,7 +70,7 @@ export default async function FichaColaborador({ params }: { params: Promise<{ i
         </div>
       </div>
 
-      <main className="px-8 py-8 max-w-5xl mx-auto print:px-0 print:py-0 print:max-w-none">
+      <main className="px-4 sm:px-8 py-6 sm:py-8 max-w-5xl mx-auto print:px-0 print:py-0 print:max-w-none">
         <header className="mb-8 print:mb-6">
           <div className="rounded-lg border p-6 print:rounded-none print:border-0 print:border-b print:pb-6"
             style={{ borderColor: "var(--line)", background: "var(--surface)" }}>
@@ -109,8 +109,8 @@ export default async function FichaColaborador({ params }: { params: Promise<{ i
             style={{ color: "var(--ink-tertiary)" }}>
             Registro de entregas
           </p>
-          <div className="rounded-lg border overflow-hidden print:rounded-none" style={{ borderColor: "var(--line)" }}>
-            <table className="w-full text-[13px] border-collapse">
+          <div className="rounded-lg border overflow-x-auto print:overflow-visible print:rounded-none" style={{ borderColor: "var(--line)" }}>
+            <table className="w-full min-w-[680px] print:min-w-0 text-[13px] border-collapse">
               <thead>
                 <tr style={{ background: "var(--surface)", borderBottom: "1px solid var(--line)" }}>
                   <Th>Data / Hora</Th>

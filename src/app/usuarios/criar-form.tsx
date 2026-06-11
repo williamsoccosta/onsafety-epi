@@ -54,7 +54,7 @@ export function CriarUsuarioForm() {
         <p className="text-[14px] font-semibold" style={{ color: "var(--ink)" }}>Novo usuario</p>
         <button onClick={() => setOpen(false)} className="text-[12px]" style={{ color: "var(--ink-muted)" }}>Cancelar</button>
       </div>
-      <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Field label="Nome" name="nome" type="text" />
         <Field label="E-mail" name="email" type="email" required />
         <Field label="Senha inicial" name="password" type="password" required />
