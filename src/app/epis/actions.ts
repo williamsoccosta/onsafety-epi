@@ -31,3 +31,25 @@ export async function alternarAtivoEPI(id: string, ativo: boolean) {
   await supabase.schema("epi").from("itens").update({ ativo: !ativo }).eq("id", id);
   revalidatePath("/epis");
 }
+
+export async function atualizarParametrosEPI(id: string, formData: FormData) {
+  const supabase = await createClient();
+
+  const parse = (k: string) => {
+    const v = String(formData.get(k) || "").trim();
+    if (!v) return null;
+    const n = parseInt(v);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  };
+
+  const { error } = await supabase.schema("epi").from("itens").update({
+    vida_util_dias: parse("vida_util_dias"),
+    limite_por_entrega: parse("limite_por_entrega"),
+    estoque_minimo: parse("estoque_minimo"),
+  }).eq("id", id);
+
+  if (error) return { error: error.message };
+  revalidatePath("/epis");
+  revalidatePath("/trocas");
+  return { error: null };
+}

@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { alternarAtivoEPI } from "./actions";
+import { alternarAtivoEPI, atualizarParametrosEPI } from "./actions";
 import { Selo, SeloBotao } from "@/components/selo";
 import { CabecalhoPagina } from "@/components/page-header";
 import { NovoEPIForm } from "./novo-form";
@@ -49,17 +49,18 @@ export default async function EPIsPage() {
             <thead>
               <tr style={{ background: "var(--surface)", borderBottom: "1px solid var(--line)" }}>
                 <Th>Equipamento</Th>
-                <Th>Complemento</Th>
                 <Th>CA</Th>
                 <Th>Validade CA</Th>
-                <Th>Vida util</Th>
+                <Th>Vida util (d)</Th>
                 <Th>Lim./entrega</Th>
+                <Th>Est. minimo</Th>
                 <Th align="right">Status</Th>
               </tr>
             </thead>
             <tbody>
               {itens?.map((item, i) => {
                 const vencido = caVencido(item.ca_validade);
+                const fid = "params-" + item.id;
                 return (
                   <tr
                     key={item.id}
@@ -70,9 +71,11 @@ export default async function EPIsPage() {
                   >
                     <Td>
                       <span style={{ fontWeight: 600, color: "var(--ink)" }}>{item.nome}</span>
-                    </Td>
-                    <Td>
-                      <span style={{ color: "var(--ink-secondary)" }}>{item.complemento ?? "—"}</span>
+                      {item.complemento && (
+                        <span className="block text-[11px]" style={{ color: "var(--ink-tertiary)" }}>
+                          {item.complemento}
+                        </span>
+                      )}
                     </Td>
                     <Td>
                       {item.ca ? (
@@ -93,17 +96,32 @@ export default async function EPIsPage() {
                       )}
                     </Td>
                     <Td>
-                      <span className="tabular" style={{ color: "var(--ink-tertiary)" }}>
-                        {item.vida_util_dias ? `${item.vida_util_dias}d` : "—"}
-                      </span>
+                      <CampoNum form={fid} name="vida_util_dias" defaultValue={item.vida_util_dias} />
                     </Td>
                     <Td>
-                      <span className="tabular" style={{ color: "var(--ink-tertiary)" }}>
-                        {item.limite_por_entrega ?? "—"}
-                      </span>
+                      <CampoNum form={fid} name="limite_por_entrega" defaultValue={item.limite_por_entrega} />
+                    </Td>
+                    <Td>
+                      <CampoNum form={fid} name="estoque_minimo" defaultValue={item.estoque_minimo} />
                     </Td>
                     <Td align="right">
                       <div className="flex items-center justify-end gap-2">
+                        <form
+                          id={fid}
+                          action={async (formData: FormData) => {
+                            "use server";
+                            await atualizarParametrosEPI(item.id, formData);
+                          }}
+                        >
+                          <button
+                            type="submit"
+                            className="h-6 px-2 rounded text-[11px] font-medium border transition-colors"
+                            style={{ borderColor: "var(--line)", color: "var(--ink-secondary)" }}
+                            title="Salvar parametros"
+                          >
+                            Salvar
+                          </button>
+                        </form>
                         {item.ca && (
                           <Selo variant={vencido ? "alert" : "ok"}>
                             {vencido ? "CA Vencido" : "CA Valido"}
@@ -132,10 +150,28 @@ export default async function EPIsPage() {
         </section>
 
         <p className="text-[11px]" style={{ color: "var(--ink-muted)" }}>
-          {ativos} de {itens?.length ?? 0} itens ativos. Digite o numero do CA no formulario para auto-preencher dados do certificado.
+          {ativos} de {itens?.length ?? 0} itens ativos. Vida util define a previsao de troca na
+          Agenda de Trocas; estoque minimo alimenta o alerta do painel.
         </p>
       </div>
     </main>
+  );
+}
+
+function CampoNum({ form, name, defaultValue }: {
+  form: string; name: string; defaultValue: number | null;
+}) {
+  return (
+    <input
+      type="number"
+      min={1}
+      name={name}
+      form={form}
+      defaultValue={defaultValue ?? ""}
+      placeholder="—"
+      className="w-16 h-7 rounded border px-2 text-[12px] tabular outline-none"
+      style={{ background: "var(--control-bg)", borderColor: "var(--control-border)", color: "var(--ink)" }}
+    />
   );
 }
 

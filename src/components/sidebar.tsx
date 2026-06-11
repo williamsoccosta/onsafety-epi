@@ -21,6 +21,7 @@ function getNav(perfil: Perfil) {
       ? [
           { href: "/movimentacoes", label: "Movimentacoes", marca: "M" },
           { href: "/movimentacoes/nova-entrega", label: "Entrega de EPI", marca: "EE" },
+          { href: "/trocas", label: "Agenda de Trocas", marca: "AT" },
         ] : []),
   ];
   const consultas = [
