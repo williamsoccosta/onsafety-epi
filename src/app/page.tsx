@@ -1,79 +1,132 @@
 import { createClient } from "@/lib/supabase/server";
-import { getPerfilAtual, LABELS_PERFIL } from "@/lib/auth";
+import { getPerfilAtual } from "@/lib/auth";
+import { LABELS_PERFIL } from "@/lib/types";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
+
+function fmtData(iso: string) {
+  const [ano, mes, dia] = iso.split("T")[0].split("-");
+  return `${dia}/${mes}/${ano}`;
+}
 
 export default async function Dashboard() {
   const supabase = await createClient();
   const perfil = await getPerfilAtual();
 
+  const hoje = new Date();
+  const limite = new Date(hoje.getTime() + 60 * 24 * 60 * 60 * 1000);
+  const limiteIso = limite.toISOString().split("T")[0];
+
+  // obra_id e cross-schema — PostgREST nao resolve embedded join; juntar em memoria.
   const [
     { count: totalColabs },
     { count: totalEPIs },
     { count: totalMovs },
     { data: movRecentes },
     { data: estoqueBaixo },
+    { data: casVencendo },
+    { data: obrasData },
   ] = await Promise.all([
     supabase.schema("epi").from("colaboradores").select("*", { count: "exact", head: true }).eq("ativo", true),
     supabase.schema("epi").from("itens").select("*", { count: "exact", head: true }).eq("ativo", true),
     supabase.schema("epi").from("movimentacoes").select("*", { count: "exact", head: true }),
     supabase.schema("epi").from("movimentacoes")
-      .select("id,criado_em,motivo,quantidade,epi_id(nome),obra_id(nome)")
+      .select("id,criado_em,motivo,quantidade,obra_id,epi_id(nome)")
       .order("criado_em", { ascending: false })
       .limit(6),
     supabase.schema("epi").from("estoque")
-      .select("saldo,epi_id(nome,complemento),obra_id(nome)")
+      .select("saldo,obra_id,epi_id(nome,complemento)")
       .lt("saldo", 3)
       .gt("saldo", 0)
       .limit(5),
+    supabase.schema("epi").from("itens")
+      .select("id,nome,ca,ca_validade")
+      .eq("ativo", true)
+      .not("ca_validade", "is", null)
+      .lte("ca_validade", limiteIso)
+      .order("ca_validade", { ascending: true })
+      .limit(8),
+    supabase.schema("obras").from("obras").select("id,nome"),
   ]);
+
+  const obraMap: Record<string, string> = Object.fromEntries(
+    (obrasData ?? []).map((o) => [o.id, o.nome])
+  );
 
   return (
     <main className="px-8 py-8 max-w-5xl">
-      {/* Saudação */}
+      {/* Saudacao */}
       <div className="mb-8">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] mb-1"
           style={{ color: "var(--accent)" }}>
           Painel de Controle
         </p>
         <h1 className="text-[28px] font-semibold tracking-tight" style={{ color: "var(--ink)" }}>
-          Bom dia, {perfil?.nome?.split(" ")[0] ?? "Usuário"}
+          Bom dia, {perfil?.nome?.split(" ")[0] ?? "Usuario"}
         </h1>
         <p className="mt-1 text-[14px]" style={{ color: "var(--ink-secondary)" }}>
-          {LABELS_PERFIL[perfil?.perfil ?? "colaborador"]} · FAAB Engenharia Ltda
+          {perfil ? LABELS_PERFIL[perfil.perfil] : ""} · FAAB Engenharia Ltda
         </p>
       </div>
 
-      {/* Cards de métricas */}
+      {/* Cards de metricas */}
       <div className="grid grid-cols-3 gap-4 mb-8">
-        <MetricCard
-          rotulo="Colaboradores ativos"
-          valor={totalColabs ?? 0}
-          href="/colaboradores"
-          cor="var(--accent)"
-        />
-        <MetricCard
-          rotulo="EPIs cadastrados"
-          valor={totalEPIs ?? 0}
-          href="/epis"
-          cor="var(--success)"
-        />
-        <MetricCard
-          rotulo="Movimentações"
-          valor={totalMovs ?? 0}
-          href="/movimentacoes"
-          cor="var(--ink-secondary)"
-        />
+        <MetricCard rotulo="Colaboradores ativos" valor={totalColabs ?? 0} href="/colaboradores" cor="var(--accent)" />
+        <MetricCard rotulo="EPIs cadastrados" valor={totalEPIs ?? 0} href="/epis" cor="var(--success)" />
+        <MetricCard rotulo="Movimentacoes" valor={totalMovs ?? 0} href="/movimentacoes" cor="var(--ink-secondary)" />
       </div>
 
+      {/* CAs vencendo em 60 dias */}
+      <section className="mb-8">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em]"
+            style={{ color: "var(--ink-tertiary)" }}>
+            CAs vencendo nos proximos 60 dias
+          </p>
+          <Link href="/ca?vencidos=1" className="text-[11px]" style={{ color: "var(--accent)" }}>
+            Consulta CA →
+          </Link>
+        </div>
+        <div className="rounded-lg border overflow-hidden" style={{ borderColor: "var(--line)" }}>
+          {(casVencendo ?? []).length === 0 ? (
+            <p className="px-4 py-6 text-[13px] text-center" style={{ color: "var(--ink-muted)" }}>
+              Nenhum CA vencendo no periodo.
+            </p>
+          ) : (casVencendo ?? []).map((item, i) => {
+            const vencido = new Date(item.ca_validade as string) < hoje;
+            return (
+              <div key={item.id}
+                className="flex items-center justify-between gap-3 px-4 py-3 border-b last:border-0"
+                style={{
+                  borderColor: "var(--line-soft)",
+                  background: i % 2 === 0 ? "var(--surface)" : "var(--surface-raised)",
+                }}>
+                <div className="min-w-0">
+                  <p className="text-[12px] font-medium truncate" style={{ color: "var(--ink)" }}>
+                    {item.nome}
+                  </p>
+                  <p className="text-[11px] tabular" style={{ color: "var(--ink-tertiary)" }}>
+                    CA {item.ca}
+                  </p>
+                </div>
+                <span className="tabular text-[12px] font-semibold shrink-0"
+                  style={{ color: vencido ? "var(--danger)" : "var(--accent)" }}>
+                  {vencido ? "Vencido em " : "Vence em "}{fmtData(item.ca_validade as string)}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
       <div className="grid grid-cols-2 gap-6">
-        {/* Movimentações recentes */}
+        {/* Movimentacoes recentes */}
         <section>
           <div className="flex items-center justify-between mb-3">
             <p className="text-[11px] font-semibold uppercase tracking-[0.12em]"
               style={{ color: "var(--ink-tertiary)" }}>
-              Movimentações recentes
+              Movimentacoes recentes
             </p>
             <Link href="/movimentacoes" className="text-[11px]" style={{ color: "var(--accent)" }}>
               Ver todas →
@@ -82,23 +135,23 @@ export default async function Dashboard() {
           <div className="rounded-lg border overflow-hidden" style={{ borderColor: "var(--line)" }}>
             {(movRecentes ?? []).length === 0 ? (
               <p className="px-4 py-6 text-[13px] text-center" style={{ color: "var(--ink-muted)" }}>
-                Nenhuma movimentação registrada.
+                Nenhuma movimentacao registrada.
               </p>
             ) : (movRecentes ?? []).map((m, i) => {
               const epi = m.epi_id as unknown as { nome: string } | null;
-              const obra = m.obra_id as unknown as { nome: string } | null;
               const positivo = (m.quantidade as number) > 0;
               return (
                 <div key={m.id}
                   className="flex items-center gap-3 px-4 py-3 border-b last:border-0"
-                  style={{ borderColor: "var(--line-soft)", background: i % 2 === 0 ? "var(--surface)" : "var(--surface-raised)" }}>
-                  <span
-                    className="shrink-0 w-1.5 h-1.5 rounded-full"
-                    style={{ background: positivo ? "var(--success)" : "var(--danger)" }}
-                  />
+                  style={{
+                    borderColor: "var(--line-soft)",
+                    background: i % 2 === 0 ? "var(--surface)" : "var(--surface-raised)",
+                  }}>
+                  <span className="shrink-0 w-1.5 h-1.5 rounded-full"
+                    style={{ background: positivo ? "var(--success)" : "var(--danger)" }} />
                   <div className="flex-1 min-w-0">
                     <p className="text-[12px] font-medium truncate" style={{ color: "var(--ink)" }}>
-                      {epi?.nome ?? "—"} · {obra?.nome ?? "—"}
+                      {epi?.nome ?? "—"} · {obraMap[m.obra_id as string] ?? "—"}
                     </p>
                     <p className="text-[11px]" style={{ color: "var(--ink-tertiary)" }}>
                       {m.motivo} · {new Date(m.criado_em).toLocaleDateString("pt-BR")}
@@ -132,15 +185,20 @@ export default async function Dashboard() {
               </p>
             ) : (estoqueBaixo ?? []).map((e, i) => {
               const epi = e.epi_id as unknown as { nome: string; complemento: string | null } | null;
-              const obra = e.obra_id as unknown as { nome: string } | null;
               return (
-                <div key={i} className="flex items-center justify-between px-4 py-3 border-b last:border-0"
-                  style={{ borderColor: "var(--line-soft)", background: i % 2 === 0 ? "var(--surface)" : "var(--surface-raised)" }}>
+                <div key={i}
+                  className="flex items-center justify-between px-4 py-3 border-b last:border-0"
+                  style={{
+                    borderColor: "var(--line-soft)",
+                    background: i % 2 === 0 ? "var(--surface)" : "var(--surface-raised)",
+                  }}>
                   <div className="min-w-0">
                     <p className="text-[12px] font-medium truncate" style={{ color: "var(--ink)" }}>
                       {epi?.nome ?? "—"}{epi?.complemento ? ` · ${epi.complemento}` : ""}
                     </p>
-                    <p className="text-[11px]" style={{ color: "var(--ink-tertiary)" }}>{obra?.nome ?? "—"}</p>
+                    <p className="text-[11px]" style={{ color: "var(--ink-tertiary)" }}>
+                      {obraMap[e.obra_id as string] ?? "—"}
+                    </p>
                   </div>
                   <span className="tabular text-[13px] font-bold ml-4"
                     style={{ color: (e.saldo as number) <= 1 ? "var(--danger)" : "var(--accent)" }}>
