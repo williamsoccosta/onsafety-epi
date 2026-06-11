@@ -60,7 +60,14 @@ export default async function FichaColaborador({ params }: { params: Promise<{ i
           style={{ color: "var(--ink-secondary)" }}>
           &#8592; Colaboradores
         </a>
-        <BotaoImprimir />
+        <div className="flex items-center gap-2">
+          <a href={`/colaboradores/${id}/pdf`}
+            className="h-9 px-4 flex items-center rounded-md text-[13px] font-semibold transition-opacity hover:opacity-90"
+            style={{ background: "var(--accent)", color: "var(--accent-ink)" }}>
+            Baixar PDF
+          </a>
+          <BotaoImprimir />
+        </div>
       </div>
 
       <main className="px-8 py-8 max-w-5xl mx-auto print:px-0 print:py-0 print:max-w-none">
