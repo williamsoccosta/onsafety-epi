@@ -4,8 +4,14 @@ import { cookies } from "next/headers";
 export async function createClient() {
   const cookieStore = await cookies();
 
+  // Prioridade: URL interna (sem TLS overhead) > URL publica
+  const supabaseUrl =
+    process.env.SUPABASE_INTERNAL_URL ??
+    process.env.NEXT_PUBLIC_SUPABASE_INTERNAL_URL ??
+    process.env.NEXT_PUBLIC_SUPABASE_URL!;
+
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    supabaseUrl,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
@@ -17,9 +23,7 @@ export async function createClient() {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options)
             );
-          } catch {
-            // setAll called from a Server Component — ignore if middleware refreshes session
-          }
+          } catch {}
         },
       },
     }

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
-import { Sidebar } from "@/components/sidebar";
+import { AppShell } from "@/components/app-shell";
+import { getPerfilAtual } from "@/lib/auth";
 
 const display = Space_Grotesk({
   variable: "--font-display",
@@ -20,16 +21,16 @@ export const metadata: Metadata = {
   description: "Gestao de EPIs e fardamentos em obra",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const perfil = await getPerfilAtual();
+
   return (
     <html lang="pt-BR">
-      <body className={`${display.variable} ${mono.variable} antialiased`} style={{ fontFamily: "var(--font-display), sans-serif" }}>
-        <div className="flex min-h-screen overflow-x-hidden">
-          <Sidebar />
-          <div className="flex-1 min-w-0">{children}</div>
-        </div>
+      <body
+        className={`${display.variable} ${mono.variable} antialiased`}
+        style={{ fontFamily: "var(--font-display), sans-serif" }}
+      >
+        <AppShell perfil={perfil}>{children}</AppShell>
       </body>
     </html>
   );
