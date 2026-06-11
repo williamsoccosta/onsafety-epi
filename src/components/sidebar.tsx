@@ -20,7 +20,7 @@ function getNav(perfil: Perfil) {
     ...(["supervisor","almoxarife","tecnico_seguranca"].includes(perfil)
       ? [
           { href: "/movimentacoes", label: "Movimentacoes", marca: "M" },
-          { href: "/movimentacoes/nova-entrega", label: "Nova Entrega", marca: "NE" },
+          { href: "/movimentacoes/nova-entrega", label: "Entrega de EPI", marca: "EE" },
         ] : []),
   ];
   const consultas = [

@@ -3,7 +3,7 @@ import { EntregaForm } from "./entrega-form";
 
 export const dynamic = "force-dynamic";
 
-export default async function NovaEntregaPage() {
+export default async function EntregaEpiPage() {
   const supabase = await createClient();
 
   const [{ data: obras }, { data: epis }, { data: colabs }] = await Promise.all([
@@ -21,10 +21,10 @@ export default async function NovaEntregaPage() {
           &#8592; Movimentacoes
         </a>
         <h1 className="mt-2 text-[22px] font-semibold tracking-tight" style={{ color: "var(--ink)" }}>
-          Registrar Entrega de EPI
+          Entrega de EPI
         </h1>
         <p className="mt-1 text-[13px]" style={{ color: "var(--ink-secondary)" }}>
-          Preencha os dados e colete a assinatura do colaborador.
+          Entrega ou substituicao no balcao: preencha os dados e colete a assinatura do colaborador.
         </p>
       </div>
       <EntregaForm

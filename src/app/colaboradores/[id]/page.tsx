@@ -29,20 +29,25 @@ export default async function FichaColaborador({ params }: { params: Promise<{ i
   const [
     { data: entregas },
     { data: obrasData },
+    { data: perfisData },
   ] = await Promise.all([
     supabase
       .schema("epi").from("movimentacoes")
-      .select("id,criado_em,quantidade,observacao,assinatura_url,obra_id,epi_id(nome,complemento,ca,ca_validade)")
+      .select("id,criado_em,quantidade,observacao,assinatura_url,obra_id,motivo,criado_por,epi_id(nome,complemento,ca,ca_validade)")
       .eq("colaborador_id", id)
-      .eq("motivo", "Entrega")
+      .in("motivo", ["Entrega", "Substituicao"])
       .order("criado_em", { ascending: false }),
     supabase
       .schema("obras").from("obras")
       .select("id,nome"),
+    supabase.from("perfis").select("id,nome"),
   ]);
 
   const obraMap: Record<string, string> = Object.fromEntries(
     (obrasData ?? []).map((o) => [o.id, o.nome])
+  );
+  const autorMap: Record<string, string> = Object.fromEntries(
+    (perfisData ?? []).map((p) => [p.id, p.nome ?? "—"])
   );
 
   const totalItens = (entregas ?? []).reduce((s, e) => s + Math.abs(e.quantidade as number), 0);
@@ -128,9 +133,18 @@ export default async function FichaColaborador({ params }: { params: Promise<{ i
                         <span className="tabular text-[12px]" style={{ color: "var(--ink-tertiary)" }}>
                           {fmtHora(e.criado_em)}
                         </span>
+                        <span className="block text-[11px]" style={{ color: "var(--ink-muted)" }}>
+                          por {e.criado_por ? (autorMap[e.criado_por as string] ?? "—") : "—"}
+                        </span>
                       </td>
                       <td className="px-4 py-3">
                         <span style={{ fontWeight: 600, color: "var(--ink)" }}>{epi?.nome ?? "—"}</span>
+                        {e.motivo === "Substituicao" && (
+                          <span className="ml-2 text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded"
+                            style={{ background: "var(--surface-2)", color: "var(--ink-tertiary)" }}>
+                            Substituicao
+                          </span>
+                        )}
                         {epi?.complemento && (
                           <span className="block text-[11px]" style={{ color: "var(--ink-tertiary)" }}>
                             {epi.complemento}

@@ -152,7 +152,11 @@ export function EntregaForm({
           Dados da entrega
         </p>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
+          <Field label="Motivo" name="motivo" required>
+            <option value="Entrega">Entrega</option>
+            <option value="Substituicao">Substituicao</option>
+          </Field>
           <Field label="Colaborador" name="colaborador_id" required>
             <option value="">Selecione...</option>
             {colaboradores.map((col) => (
