@@ -17,7 +17,7 @@ Empresa contratante de uma ou mais obras. Nao existe tabela separada de clientes
 ### EPI (Equipamento de Protecao Individual)
 Item de protecao no inventario da empresa (`epi.itens`). A tabela e **populada e sincronizada automaticamente** a partir do catalogo externo (`catalogo.fichas_tecnicas`) via trigger `trg_sync_itens` — mesmo `id` nas duas tabelas. Cada EPI tem CA com data de validade (`ca_validade`).
 
-As colunas `vida_util_dias` e `limite_por_entrega` existem mas estao **dormentes** (fora de escopo atual).
+Parametros configuraveis por item no Catalogo: `vida_util_dias` (alimenta a Agenda de Trocas), `limite_por_entrega` e `estoque_minimo` (alimenta o alerta de estoque do painel; fallback 3 quando nao definido).
 
 ### CA (Certificado de Aprovacao)
 Certificado emitido pelo Ministerio do Trabalho que valida um EPI para uso. Possui numero, data de validade e situacao (`VALIDO` ou `VENCIDO`).
@@ -33,7 +33,7 @@ Base externa de fichas tecnicas de CAs (`catalogo.fichas_tecnicas`). Fonte de ve
 Registro de entrada ou saida de EPI no estoque de uma obra. Motivos: `Entrada`, `Quantidade Inicial`, `Entrega`, `Substituicao`, `Devolucao` (sem acentos — constraint do DB alinhada ao codigo). Saidas tem quantidade negativa. Coluna `criado_por` registra o usuario que fez o lancamento.
 
 ### Entrega de EPI (fluxo de balcao)
-Fluxo unico de entrega presencial: o almoxarife preenche os dados (colaborador, obra, EPI, quantidade, motivo) no dispositivo dele e o colaborador **assina na hora** no canvas. Motivos `Entrega` e `Substituicao` **exigem assinatura**; demais motivos nao tem assinatura.
+Fluxo unico de entrega presencial: o almoxarife preenche os dados (colaborador, obra, **lista de EPIs com quantidades**, motivo) no dispositivo dele e o colaborador **assina na hora** no canvas. Entrega multipla: uma assinatura cobre a lista toda (N movimentacoes compartilham a mesma imagem de assinatura, upload unico por lote) — igual ao papel. Motivos `Entrega` e `Substituicao` **exigem assinatura**; demais motivos nao tem assinatura.
 
 - **Entrega**: tipicamente para funcionarios novos.
 - **Substituicao**: o caso mais frequente — item desgastado trocado por novo. Uma unica movimentacao assinada; o item velho vira descarte fisico (nao entra no sistema).
@@ -41,11 +41,14 @@ Fluxo unico de entrega presencial: o almoxarife preenche os dados (colaborador, 
 
 O almoxarife define o que entregar consultando o programa de certificacao (documento externo, baseado na funcao do colaborador). A relacao funcao→EPIs ("kit por funcao") **nao e modelada no sistema** — backlog futuro.
 
+### Troca prevista / Agenda de Trocas
+Para cada ultima entrega de um EPI a um colaborador, a troca prevista = data da entrega + `vida_util_dias` do item. A pagina "Agenda de Trocas" lista os EPIs em campo ordenados pelo vencimento, com filtro de vencidas. Entregas de itens sem vida util definida ficam fora da agenda (aviso aponta para o Catalogo).
+
 ### Assinatura
 Imagem PNG capturada em canvas no ato da entrega, salva no bucket `assinaturas` do Storage com URL publica gravada em `movimentacoes.assinatura_url`. Comprova recebimento conforme NR-06. Pode ser apagada (ex: assinatura errada) por quem opera a ficha.
 
 ### Colaborador
-Trabalhador que recebe EPIs. Identificado por nome, matricula e funcao (texto livre). Cada entrega e registrada na ficha individual. **Colaborador nao tem login** — a assinatura acontece no dispositivo do almoxarife.
+Trabalhador que recebe EPIs. Identificado por nome, matricula e funcao (texto livre). Cada entrega e registrada na ficha individual. **Colaborador nao tem login** — a assinatura acontece no dispositivo do almoxarife. A ficha pode ser baixada em **PDF com um clique** (rota `/colaboradores/[id]/pdf`, pdfkit) com assinaturas embutidas e declaracao NR-06.
 
 ### Perfil
 Nivel de acesso de um usuario do sistema (tabela `public.perfis`, FK para `auth.users`). Quatro perfis ativos:
@@ -94,6 +97,9 @@ ssh -i ~/.ssh/id_ed25519_hostinger root@187.77.234.21 \
 
 ## Decisoes de design
 
+### Paridade com OnSafety (2026-06)
+Referencia de produto: OnSafety (onsafety.com.br). Implementado: vida util com Agenda de Trocas, entrega multipla com assinatura unica, estoque minimo por item, dashboard com indicadores (EPIs mais entregues, por motivo, trabalhadores sem EPI, trocas vencidas) e ficha em PDF. Fora do alcance: biometria facial, app mobile offline, assinatura remota por e-mail.
+
 ### Fluxo de balcao unico para entregas (2026-06)
 Entrega e substituicao acontecem presencialmente no almoxarifado: almoxarife preenche, colaborador assina no mesmo dispositivo. Rejeitado: autosservico do colaborador (sem controle de estoque) e fluxo em duas etapas com assinatura posterior (fichas ficariam eternamente pendentes — colaborador de obra nao loga em sistema). Consequencia: colaborador nao precisa de conta; menos gestao de acessos.
 
@@ -111,5 +117,4 @@ A pagina "Consulta CA" tem um checkbox "Mostrar apenas vencidos" que filtra `sit
 ## Fora de escopo (backlog futuro)
 
 - **Kit por funcao**: tabela funcao→EPIs do programa de certificacao, sugestao automatica de kit na entrega, auditoria de "faltando".
-- **Vida util / limite por entrega**: alertas de substituicao programada e bloqueio de quantidade.
 - **Login de colaborador**: consulta da propria ficha.
