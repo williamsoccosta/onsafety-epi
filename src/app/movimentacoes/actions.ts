@@ -43,53 +43,61 @@ export async function registrarEntregaComAssinatura(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
 
   const colaborador_id = String(formData.get("colaborador_id") || "").trim();
-  const epi_id         = String(formData.get("epi_id") || "").trim();
   const obra_id        = String(formData.get("obra_id") || "").trim();
   const motivo         = String(formData.get("motivo") || "Entrega").trim();
-  const qtd            = parseInt(String(formData.get("quantidade") || "1"));
   const observacao     = String(formData.get("observacao") || "").trim() || null;
   const assinaturaB64  = String(formData.get("assinatura_base64") || "").trim();
+  const itensJson      = String(formData.get("itens_json") || "[]");
 
   if (!MOTIVOS_BALCAO.includes(motivo))
     return { error: "Motivo invalido para o fluxo de balcao." };
-  if (!colaborador_id || !epi_id || !obra_id || !qtd || qtd <= 0)
-    return { error: "Preencha todos os campos obrigatorios." };
+  if (!colaborador_id || !obra_id)
+    return { error: "Preencha colaborador e obra." };
   // Entrega e Substituicao exigem assinatura (NR-06)
   if (!assinaturaB64)
     return { error: "Assinatura do colaborador e obrigatoria." };
 
-  const { data: mov, error } = await supabase
-    .schema("epi").from("movimentacoes")
-    .insert({
-      obra_id, epi_id, colaborador_id, motivo, quantidade: -qtd, observacao,
-      criado_por: user?.id ?? null,
-    })
-    .select("id").single();
-
-  if (error) return { error: error.message };
-
-  if (mov?.id) {
-    try {
-      const b64 = assinaturaB64.replace(/^data:image\/png;base64,/, "");
-      const buf = Buffer.from(b64, "base64");
-      const storagePath = `${colaborador_id}/${mov.id}.png`;
-
-      await admin.storage.from("assinaturas").upload(storagePath, buf, {
-        contentType: "image/png",
-        upsert: true,
-      });
-
-      // URL publica — admin client retorna URL interna que browser nao acessa
-      const publicUrl = process.env.NEXT_PUBLIC_SUPABASE_URL +
-        "/storage/v1/object/public/assinaturas/" + storagePath;
-
-      await supabase.schema("epi").from("movimentacoes")
-        .update({ assinatura_url: publicUrl })
-        .eq("id", mov.id);
-    } catch (_) {
-      // assinatura falhou mas movimentacao foi registrada
-    }
+  let itens: { epi_id: string; quantidade: number }[];
+  try {
+    itens = JSON.parse(itensJson);
+  } catch {
+    return { error: "Lista de itens invalida." };
   }
+  itens = itens.filter((i) => i.epi_id && i.quantidade > 0);
+  if (itens.length === 0)
+    return { error: "Adicione pelo menos um EPI." };
+
+  // Uma assinatura cobre a lista toda — upload unico, URL compartilhada
+  let assinaturaUrl: string | null = null;
+  const loteId = crypto.randomUUID();
+  try {
+    const b64 = assinaturaB64.replace(/^data:image\/png;base64,/, "");
+    const buf = Buffer.from(b64, "base64");
+    const storagePath = `${colaborador_id}/${loteId}.png`;
+    await admin.storage.from("assinaturas").upload(storagePath, buf, {
+      contentType: "image/png",
+      upsert: true,
+    });
+    // URL publica — admin client retorna URL interna que browser nao acessa
+    assinaturaUrl = process.env.NEXT_PUBLIC_SUPABASE_URL +
+      "/storage/v1/object/public/assinaturas/" + storagePath;
+  } catch {
+    return { error: "Falha ao salvar a assinatura. Tente novamente." };
+  }
+
+  const linhas = itens.map((i) => ({
+    obra_id,
+    epi_id: i.epi_id,
+    colaborador_id,
+    motivo,
+    quantidade: -Math.abs(i.quantidade),
+    observacao,
+    criado_por: user?.id ?? null,
+    assinatura_url: assinaturaUrl,
+  }));
+
+  const { error } = await supabase.schema("epi").from("movimentacoes").insert(linhas);
+  if (error) return { error: error.message };
 
   revalidatePath("/movimentacoes");
   redirect("/colaboradores/" + colaborador_id);

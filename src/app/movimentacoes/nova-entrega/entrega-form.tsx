@@ -6,6 +6,7 @@ import { registrarEntregaComAssinatura } from "../actions";
 type Obra  = { id: string; nome: string };
 type EPI   = { id: string; nome: string; complemento: string | null; ca: number | null };
 type Colab = { id: string; nome: string; matricula: string | null };
+type ItemEntrega = { epi_id: string; quantidade: number };
 
 export function EntregaForm({
   obras, epis, colaboradores,
@@ -14,11 +15,28 @@ export function EntregaForm({
   const lastPt        = useRef<{ x: number; y: number } | null>(null);
   const assinaturaRef = useRef<string>("");
 
+  const [itens, setItens]       = useState<ItemEntrega[]>([{ epi_id: "", quantidade: 1 }]);
   const [drawing,  setDrawing]  = useState(false);
   const [empty,    setEmpty]    = useState(true);
   const [assinado, setAssinado] = useState(false);
   const [erro,     setErro]     = useState<string | null>(null);
   const [loading,  setLoading]  = useState(false);
+
+  function epiLabel(e: EPI) {
+    return e.nome
+      + (e.complemento ? " · " + e.complemento : "")
+      + (e.ca ? " (CA " + e.ca + ")" : "");
+  }
+
+  function setItem(idx: number, patch: Partial<ItemEntrega>) {
+    setItens((prev) => prev.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
+  }
+  function addItem() {
+    setItens((prev) => [...prev, { epi_id: "", quantidade: 1 }]);
+  }
+  function removeItem(idx: number) {
+    setItens((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev));
+  }
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -123,6 +141,11 @@ export function EntregaForm({
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setErro(null);
+    const validos = itens.filter((i) => i.epi_id && i.quantidade > 0);
+    if (validos.length === 0) {
+      setErro("Adicione pelo menos um EPI.");
+      return;
+    }
     if (!assinado || !assinaturaRef.current) {
       setErro("Confirme a assinatura antes de registrar.");
       return;
@@ -130,6 +153,7 @@ export function EntregaForm({
     setLoading(true);
     const fd = new FormData(e.currentTarget);
     fd.set("assinatura_base64", assinaturaRef.current);
+    fd.set("itens_json", JSON.stringify(validos));
     const res = await registrarEntregaComAssinatura(fd);
     if (res?.error) {
       setErro(res.error);
@@ -140,7 +164,7 @@ export function EntregaForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
 
-      {/* Dados */}
+      {/* Dados gerais */}
       <div
         className="rounded-lg border p-5 space-y-4"
         style={{ borderColor: "var(--line)", background: "var(--surface)" }}
@@ -174,40 +198,6 @@ export function EntregaForm({
           </Field>
         </div>
 
-        <div className="grid grid-cols-3 gap-3">
-          <Field label="EPI" name="epi_id" required className="col-span-2">
-            <option value="">Selecione...</option>
-            {epis.map((ep) => (
-              <option key={ep.id} value={ep.id}>
-                {ep.nome}
-                {ep.complemento ? " · " + ep.complemento : ""}
-                {ep.ca ? " (CA " + ep.ca + ")" : ""}
-              </option>
-            ))}
-          </Field>
-          <div className="flex flex-col gap-1.5">
-            <span
-              className="text-[11px] font-medium uppercase tracking-[0.08em]"
-              style={{ color: "var(--ink-tertiary)" }}
-            >
-              Quantidade
-            </span>
-            <input
-              name="quantidade"
-              type="number"
-              min="1"
-              defaultValue="1"
-              required
-              className="h-[38px] rounded-md border px-3 text-[13px] outline-none"
-              style={{
-                background: "var(--control-bg)",
-                borderColor: "var(--control-border)",
-                color: "var(--ink)",
-              }}
-            />
-          </div>
-        </div>
-
         <div className="flex flex-col gap-1.5">
           <span
             className="text-[11px] font-medium uppercase tracking-[0.08em]"
@@ -228,7 +218,77 @@ export function EntregaForm({
         </div>
       </div>
 
-      {/* Canvas */}
+      {/* Itens da entrega */}
+      <div
+        className="rounded-lg border p-5 space-y-3"
+        style={{ borderColor: "var(--line)", background: "var(--surface)" }}
+      >
+        <div className="flex items-center justify-between">
+          <p
+            className="text-[11px] font-semibold uppercase tracking-[0.12em]"
+            style={{ color: "var(--ink-tertiary)" }}
+          >
+            EPIs da entrega ({itens.filter((i) => i.epi_id).length})
+          </p>
+          <button
+            type="button"
+            onClick={addItem}
+            className="h-7 px-3 rounded-md text-[12px] font-semibold border transition-colors"
+            style={{ borderColor: "var(--accent)", color: "var(--accent)" }}
+          >
+            + Adicionar EPI
+          </button>
+        </div>
+
+        {itens.map((item, idx) => (
+          <div key={idx} className="flex items-end gap-3">
+            <div className="flex-1 flex flex-col gap-1.5">
+              {idx === 0 && (
+                <span className="text-[11px] font-medium uppercase tracking-[0.08em]"
+                  style={{ color: "var(--ink-tertiary)" }}>EPI</span>
+              )}
+              <select
+                value={item.epi_id}
+                onChange={(e) => setItem(idx, { epi_id: e.target.value })}
+                required
+                className="h-[38px] w-full rounded-md border px-3 text-[13px] outline-none"
+                style={{ background: "var(--control-bg)", borderColor: "var(--control-border)", color: "var(--ink)" }}
+              >
+                <option value="">Selecione...</option>
+                {epis.map((ep) => (
+                  <option key={ep.id} value={ep.id}>{epiLabel(ep)}</option>
+                ))}
+              </select>
+            </div>
+            <div className="w-24 flex flex-col gap-1.5">
+              {idx === 0 && (
+                <span className="text-[11px] font-medium uppercase tracking-[0.08em]"
+                  style={{ color: "var(--ink-tertiary)" }}>Qtd</span>
+              )}
+              <input
+                type="number"
+                min={1}
+                value={item.quantidade}
+                onChange={(e) => setItem(idx, { quantidade: parseInt(e.target.value) || 1 })}
+                className="h-[38px] w-full rounded-md border px-3 text-[13px] tabular outline-none"
+                style={{ background: "var(--control-bg)", borderColor: "var(--control-border)", color: "var(--ink)" }}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => removeItem(idx)}
+              disabled={itens.length === 1}
+              className="h-[38px] w-9 shrink-0 rounded-md border text-[15px] transition-colors disabled:opacity-30"
+              style={{ borderColor: "var(--line)", color: "var(--ink-tertiary)" }}
+              title="Remover item"
+            >
+              ×
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* Assinatura */}
       <div
         className="rounded-lg border p-5"
         style={{ borderColor: "var(--line)", background: "var(--surface)" }}
@@ -238,7 +298,7 @@ export function EntregaForm({
             className="text-[11px] font-semibold uppercase tracking-[0.12em]"
             style={{ color: "var(--ink-tertiary)" }}
           >
-            Assinatura do colaborador
+            Assinatura do colaborador (cobre todos os itens)
           </p>
           {assinado ? (
             <span
@@ -325,9 +385,7 @@ export function EntregaForm({
   );
 }
 
-function Field({
-  label, name, required, children, className = "",
-}: {
+function Field({ label, name, required, children, className = "" }: {
   label: string;
   name: string;
   required?: boolean;
