@@ -1,37 +1,67 @@
-# Contexto de Domínio — Onsafety EPI
+# Contexto de Dominio — Onsafety EPI
 
-Sistema de gestão de almoxarifado de EPI para canteiros de obras da FAAB Engenharia.
+Sistema de gestao de almoxarifado de EPI para canteiros de obras da FAAB Engenharia.
 
 ---
 
-## Glossário
+## Glossario
 
 ### Obra
-Canteiro de obras onde a FAAB executa um contrato. Cada obra tem estoque próprio de EPI.  
-Campos: `nome`, `cliente` (texto livre), `ativa` (boolean).  
-Uma obra inativa não recebe mais movimentações mas permanece no histórico.
+Canteiro de obras onde a FAAB executa um contrato. Cada obra tem estoque proprio de EPI.
+Campos: `nome`, `cliente` (texto livre), `ativa` (boolean).
+Uma obra inativa nao recebe mais movimentacoes mas permanece no historico.
 
 ### Cliente
-Empresa contratante de uma ou mais obras. Não existe tabela separada de clientes — o nome é armazenado como texto livre no campo `obras.cliente`. O agrupamento de obras por cliente é feito em memória pelo valor desse campo. Obras sem cliente (`null`) formam o grupo "Sem cliente".
+Empresa contratante de uma ou mais obras. Nao existe tabela separada de clientes — o nome e armazenado como texto livre no campo `obras.cliente`. O agrupamento de obras por cliente e feito em memoria pelo valor desse campo. Obras sem cliente (`null`) formam o grupo "Sem cliente".
 
-### EPI (Equipamento de Proteção Individual)
-Item de proteção cadastrado no inventário da empresa (`epi.itens`). Cada EPI pode ter um CA vinculado com data de validade própria (`ca_validade`).
+### EPI (Equipamento de Protecao Individual)
+Item de protecao no inventario da empresa (`epi.itens`). A tabela e **populada e sincronizada automaticamente** a partir do catalogo externo (`catalogo.fichas_tecnicas`) via trigger `trg_sync_itens` — mesmo `id` nas duas tabelas. Cada EPI tem CA com data de validade (`ca_validade`).
 
-### CA (Certificado de Aprovação)
-Certificado emitido pelo Ministério do Trabalho que valida um EPI para uso. Possui número, data de validade e situação (`VALIDO` ou `VENCIDO`).
+As colunas `vida_util_dias` e `limite_por_entrega` existem mas estao **dormentes** (fora de escopo atual).
 
-Existem dois contextos de CA no sistema:
-- **Catálogo externo** (`catalogo.fichas_tecnicas`): base de referência com todos os CAs disponíveis, consultada na página "Consulta CA".
-- **CA do item** (`epi.itens.ca` + `epi.itens.ca_validade`): o certificado vinculado a um EPI específico no inventário da empresa.
+### CA (Certificado de Aprovacao)
+Certificado emitido pelo Ministerio do Trabalho que valida um EPI para uso. Possui numero, data de validade e situacao (`VALIDO` ou `VENCIDO`).
 
-### Catálogo
-Base externa de fichas técnicas de CAs (`catalogo.fichas_tecnicas`). Usada como referência de consulta e para auto-preencher dados de EPIs no cadastro.
+Dois contextos de CA no sistema:
+- **Catalogo externo** (`catalogo.fichas_tecnicas`): base de referencia com todos os CAs, consultada na pagina "Consulta CA".
+- **CA do item** (`epi.itens.ca` + `epi.itens.ca_validade`): o certificado do EPI no inventario — espelhado do catalogo pelo sync.
 
-### Movimentação
-Registro de entrada ou saída de EPI no estoque de uma obra. Tipos: `Entrada`, `Quantidade Inicial`, `Entrega`, `Substituicao`, `Devolucao`. Entregas exigem colaborador identificado (rastreabilidade NR-06).
+### Catalogo
+Base externa de fichas tecnicas de CAs (`catalogo.fichas_tecnicas`). Fonte de verdade do inventario de EPIs: todo item em `epi.itens` nasce de uma ficha tecnica do catalogo.
+
+### Movimentacao
+Registro de entrada ou saida de EPI no estoque de uma obra. Motivos: `Entrada`, `Quantidade Inicial`, `Entrega`, `Substituicao`, `Devolucao` (sem acentos — constraint do DB alinhada ao codigo). Saidas tem quantidade negativa. Coluna `criado_por` registra o usuario que fez o lancamento.
+
+### Entrega de EPI (fluxo de balcao)
+Fluxo unico de entrega presencial: o almoxarife preenche os dados (colaborador, obra, EPI, quantidade, motivo) no dispositivo dele e o colaborador **assina na hora** no canvas. Motivos `Entrega` e `Substituicao` **exigem assinatura**; demais motivos nao tem assinatura.
+
+- **Entrega**: tipicamente para funcionarios novos.
+- **Substituicao**: o caso mais frequente — item desgastado trocado por novo. Uma unica movimentacao assinada; o item velho vira descarte fisico (nao entra no sistema).
+- **Devolucao**: caso raro (ex: desligamento). Registrada na pagina Movimentacoes, sem assinatura.
+
+O almoxarife define o que entregar consultando o programa de certificacao (documento externo, baseado na funcao do colaborador). A relacao funcao→EPIs ("kit por funcao") **nao e modelada no sistema** — backlog futuro.
+
+### Assinatura
+Imagem PNG capturada em canvas no ato da entrega, salva no bucket `assinaturas` do Storage com URL publica gravada em `movimentacoes.assinatura_url`. Comprova recebimento conforme NR-06. Pode ser apagada (ex: assinatura errada) por quem opera a ficha.
 
 ### Colaborador
-Trabalhador que recebe EPIs. Identificado por nome, matrícula e função. Cada entrega é registrada na ficha individual do colaborador.
+Trabalhador que recebe EPIs. Identificado por nome, matricula e funcao (texto livre). Cada entrega e registrada na ficha individual. **Colaborador nao tem login** — a assinatura acontece no dispositivo do almoxarife.
+
+### Perfil
+Nivel de acesso de um usuario do sistema (tabela `public.perfis`, FK para `auth.users`). Quatro perfis ativos:
+
+| Acao | Supervisor | Almoxarife | Administrativo | Tec. Seguranca |
+|---|---|---|---|---|
+| Registrar movimentacao/entrega | sim | sim | — | — |
+| Cadastrar/editar colaborador | sim | — | sim | — |
+| Cadastrar/editar obra | sim | — | — | — |
+| Cadastrar/editar EPI | sim | sim | — | — |
+| Gerenciar usuarios | sim | — | — | — |
+| Leitura geral | sim | sim | sim | sim |
+
+- **Almoxarife e central** (nao vinculado a obra) — qualquer almoxarife movimenta qualquer obra.
+- **Tecnico de seguranca** so fiscaliza (leitura).
+- O perfil `colaborador` existe no enum do DB mas esta **descontinuado** (sem login de colaborador).
 
 ---
 
@@ -39,10 +69,17 @@ Trabalhador que recebe EPIs. Identificado por nome, matrícula e função. Cada 
 
 - **VPS**: `root@187.77.234.21` — chave SSH local em `~/.ssh/id_ed25519_hostinger`
 - **Projeto na VPS**: `/root/onsafety-epi`
-- **Processo**: PM2 (`onsafety-epi`, id 0), rodando `npm run start` (modo produção)
+- **Processo**: PM2 (`onsafety-epi`, id 0), rodando `npm run start` (modo producao)
+- **Supabase self-hosted**: Kong em `172.20.0.9:8000` (rede interna), publico em `https://supabase.faabengenharia.cloud`
+
+### URLs do Supabase (importante)
+- Browser/cookies: `NEXT_PUBLIC_SUPABASE_URL` (publica, HTTPS)
+- Server/middleware: `NEXT_PUBLIC_SUPABASE_INTERNAL_URL` (Kong direto — host nao alcanca a URL publica via HTTPS)
+- URLs de arquivos do Storage gravadas no DB devem usar **sempre a URL publica** (o browser precisa carregar).
+- PostgREST **nao resolve joins cross-schema** (ex: `epi.movimentacoes` → `obras.obras`): buscar separado e juntar em memoria.
 
 ### Fluxo de deploy
-O git é a fonte de verdade. Nunca editar arquivos diretamente na VPS — mudanças não commitadas causam conflitos no próximo `git pull`.
+O git e a fonte de verdade. Nunca editar arquivos diretamente na VPS — mudancas nao commitadas causam conflitos no proximo `git pull`.
 
 ```bash
 # Localmente:
@@ -55,10 +92,24 @@ ssh -i ~/.ssh/id_ed25519_hostinger root@187.77.234.21 \
 
 ---
 
-## Decisões de design
+## Decisoes de design
+
+### Fluxo de balcao unico para entregas (2026-06)
+Entrega e substituicao acontecem presencialmente no almoxarifado: almoxarife preenche, colaborador assina no mesmo dispositivo. Rejeitado: autosservico do colaborador (sem controle de estoque) e fluxo em duas etapas com assinatura posterior (fichas ficariam eternamente pendentes — colaborador de obra nao loga em sistema). Consequencia: colaborador nao precisa de conta; menos gestao de acessos.
+
+### epi.itens espelha catalogo.fichas_tecnicas (2026-06)
+PostgREST nao segue FK cross-schema, entao `movimentacoes.epi_id` referencia `epi.itens` — que e populada/sincronizada do catalogo via trigger com IDs identicos. Alternativa rejeitada: apontar FK direto pro catalogo (quebra joins embutidos do PostgREST).
 
 ### Agrupamento de obras por cliente
-A página "Obras" exibe obras agrupadas por cliente. Ordenação: alfabética pelo nome do cliente. Header do container: nome do cliente + total de obras + quantas ativas. Obras sem cliente formam o grupo "Sem cliente" ao final. Obras inativas são ocultadas por padrão; um filtro global `?inativas=1` as revela. O campo cliente no formulário usa `<datalist>` com sugestões dos clientes existentes para evitar fragmentação de grupos por erro de digitação.
+A pagina "Obras" exibe obras agrupadas por cliente. Ordenacao: alfabetica pelo nome do cliente. Header do container: nome do cliente + total de obras + quantas ativas. Obras sem cliente formam o grupo "Sem cliente" ao final. Obras inativas sao ocultadas por padrao; um filtro global `?inativas=1` as revela. O campo cliente no formulario usa `<datalist>` com sugestoes dos clientes existentes para evitar fragmentacao de grupos por erro de digitacao.
 
-### Filtro de CAs vencidos no catálogo
-A página "Consulta CA" tem um checkbox "Mostrar apenas vencidos" que filtra `situacao = 'VENCIDO'` no catálogo externo. O filtro funciona de forma independente da busca por número de CA, via URL param `?vencidos=1`.
+### Filtro de CAs vencidos no catalogo
+A pagina "Consulta CA" tem um checkbox "Mostrar apenas vencidos" que filtra `situacao = 'VENCIDO'` no catalogo externo. O filtro funciona de forma independente da busca por numero de CA, via URL param `?vencidos=1`.
+
+---
+
+## Fora de escopo (backlog futuro)
+
+- **Kit por funcao**: tabela funcao→EPIs do programa de certificacao, sugestao automatica de kit na entrega, auditoria de "faltando".
+- **Vida util / limite por entrega**: alertas de substituicao programada e bloqueio de quantidade.
+- **Login de colaborador**: consulta da propria ficha.
