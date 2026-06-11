@@ -55,6 +55,11 @@ html {
   color-scheme: light;
 }
 
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 body {
   background: var(--canvas);
   color: var(--ink);

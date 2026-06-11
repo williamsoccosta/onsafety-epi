@@ -365,8 +365,8 @@ function Barra({ rotulo, valor, max, cor }: {
   const pct = Math.max(4, Math.round((valor / max) * 100));
   return (
     <div>
-      <div className="flex items-center justify-between mb-1">
-        <span className="text-[12px] truncate pr-2" style={{ color: "var(--ink-secondary)" }}>
+      <div className="flex items-center justify-between gap-2 mb-1 min-w-0">
+        <span className="text-[12px] truncate min-w-0" style={{ color: "var(--ink-secondary)" }}>
           {rotulo}
         </span>
         <span className="tabular text-[12px] font-semibold shrink-0" style={{ color: "var(--ink)" }}>

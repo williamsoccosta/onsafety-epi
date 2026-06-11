@@ -20,10 +20,10 @@ export function AppShell({ children, perfil }: {
   }
 
   return (
-    <div className="flex min-h-screen overflow-x-hidden">
+    <div className="flex min-h-screen w-full max-w-full overflow-x-hidden">
       <Sidebar perfil={perfil} mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
 
-      <div className="flex-1 min-w-0 flex flex-col overflow-auto">
+      <div className="flex-1 min-w-0 flex flex-col">
         {/* Topbar — apenas mobile/tablet */}
         <header
           className="lg:hidden sticky top-0 z-30 flex items-center gap-3 px-4 h-14 border-b"
