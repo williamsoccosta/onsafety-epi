@@ -24,8 +24,7 @@ function getNav(perfil: Perfil) {
         ] : []),
   ];
   const consultas = [
-    ...(perfil !== "colaborador"
-      ? [{ href: "/ca", label: "Consulta CA", marca: "CA" }] : []),
+    { href: "/ca", label: "Consulta CA", marca: "CA" },
   ];
   const admin = [
     ...(perfil === "supervisor"

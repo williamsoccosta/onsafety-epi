@@ -2,7 +2,6 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { getPerfilAtual } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
 export async function loginAction(formData: FormData) {
@@ -15,10 +14,6 @@ export async function loginAction(formData: FormData) {
   if (error) return { error: "E-mail ou senha incorretos." };
 
   revalidatePath("/", "layout");
-  const perfil = await getPerfilAtual();
-  if (perfil?.perfil === "colaborador" && perfil.colaborador_id) {
-    redirect("/colaboradores/" + perfil.colaborador_id);
-  }
   redirect("/");
 }
 

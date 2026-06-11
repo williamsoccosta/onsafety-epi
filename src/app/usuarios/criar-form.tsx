@@ -8,7 +8,6 @@ const PERFIS = [
   { value: "almoxarife", label: "Almoxarife" },
   { value: "administrativo", label: "Administrativo" },
   { value: "tecnico_seguranca", label: "Tec. Seguranca" },
-  { value: "colaborador", label: "Colaborador" },
 ];
 
 export function CriarUsuarioForm() {
@@ -69,7 +68,6 @@ export function CriarUsuarioForm() {
             {PERFIS.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
           </select>
         </div>
-        <Field label="ID Colaborador (opcional)" name="colaborador_id" type="text" placeholder="UUID do colaborador" />
         {msg && (
           <p className="col-span-2 text-[13px]"
             style={{ color: msg.type === "ok" ? "var(--success)" : "var(--danger)" }}>{msg.text}</p>
