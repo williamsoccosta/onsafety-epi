@@ -21,27 +21,42 @@ const MOTIVO_COR: Record<string, "ok" | "off" | "alert"> = {
 export default async function MovimentacoesPage() {
   const supabase = await createClient();
 
+  // obra_id e cross-schema (obras.obras) — PostgREST nao resolve embedded join.
+  // perfis (autor) idem: public vs epi. Buscar separado e juntar em memoria.
   const [
     { data: obras },
     { data: epis },
     { data: colaboradores },
     { data: movs },
     { data: estoque },
+    { data: perfis },
   ] = await Promise.all([
     supabase.schema("obras").from("obras").select("id,nome").eq("ativa", true).order("nome"),
     supabase.schema("epi").from("itens").select("id,nome,complemento,ca").eq("ativo", true).order("nome"),
     supabase.schema("epi").from("colaboradores").select("id,nome,matricula").eq("ativo", true).order("nome"),
-    supabase.schema("epi").from("movimentacoes").select("id,motivo,quantidade,observacao,criado_em,epi_id(nome,complemento),obra_id(nome),colaborador_id(nome,matricula)").order("criado_em", { ascending: false }).limit(60),
-    supabase.schema("epi").from("estoque").select("saldo,epi_id(id,nome,complemento,ca),obra_id(id,nome)").order("saldo", { ascending: false }),
+    supabase.schema("epi").from("movimentacoes")
+      .select("id,motivo,quantidade,observacao,criado_em,criado_por,obra_id,epi_id(nome,complemento),colaborador_id(nome,matricula)")
+      .order("criado_em", { ascending: false }).limit(60),
+    supabase.schema("epi").from("estoque")
+      .select("saldo,obra_id,epi_id(id,nome,complemento,ca)")
+      .order("saldo", { ascending: false }),
+    supabase.from("perfis").select("id,nome"),
   ]);
+
+  const { data: todasObras } = await supabase.schema("obras").from("obras").select("id,nome");
+  const obraMap: Record<string, string> = Object.fromEntries(
+    (todasObras ?? []).map((o) => [o.id, o.nome])
+  );
+  const autorMap: Record<string, string> = Object.fromEntries(
+    (perfis ?? []).map((p) => [p.id, p.nome ?? "—"])
+  );
 
   const totalMovs = movs?.length ?? 0;
 
-  // group estoque by obra
   const estoqueByObra = (estoque ?? []).reduce<Record<string, { obraNome: string; itens: typeof estoque }>>((acc, row) => {
-    const obra = row.obra_id as unknown as { id: string; nome: string };
-    if (!acc[obra.id]) acc[obra.id] = { obraNome: obra.nome, itens: [] };
-    acc[obra.id].itens!.push(row);
+    const obraId = row.obra_id as string;
+    if (!acc[obraId]) acc[obraId] = { obraNome: obraMap[obraId] ?? "—", itens: [] };
+    acc[obraId].itens!.push(row);
     return acc;
   }, {});
 
@@ -138,9 +153,9 @@ export default async function MovimentacoesPage() {
               <tbody>
                 {(movs ?? []).map((m, i) => {
                   const epi = m.epi_id as unknown as { nome: string; complemento: string | null };
-                  const obra = m.obra_id as unknown as { nome: string };
                   const colab = m.colaborador_id as unknown as { nome: string; matricula: string | null } | null;
                   const qty = m.quantidade as number;
+                  const autor = m.criado_por ? autorMap[m.criado_por as string] : null;
                   return (
                     <tr
                       key={m.id}
@@ -153,9 +168,12 @@ export default async function MovimentacoesPage() {
                         <span className="tabular text-[12px]" style={{ color: "var(--ink-tertiary)" }}>
                           {formatarDataHora(m.criado_em)}
                         </span>
+                        <span className="block text-[11px]" style={{ color: "var(--ink-muted)" }}>
+                          por {autor ?? "—"}
+                        </span>
                       </td>
                       <td className="px-4 py-2.5">
-                        <span style={{ color: "var(--ink-secondary)" }}>{obra?.nome ?? "—"}</span>
+                        <span style={{ color: "var(--ink-secondary)" }}>{obraMap[m.obra_id as string] ?? "—"}</span>
                       </td>
                       <td className="px-4 py-2.5">
                         <span style={{ color: "var(--ink)", fontWeight: 500 }}>{epi?.nome ?? "—"}</span>
