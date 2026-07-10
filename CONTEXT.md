@@ -73,11 +73,12 @@ Nivel de acesso de um usuario do sistema (tabela `public.perfis`, FK para `auth.
 - **VPS**: `root@187.77.234.21` — chave SSH local em `~/.ssh/id_ed25519_hostinger`
 - **Projeto na VPS**: `/root/onsafety-epi`
 - **Processo**: PM2 (`onsafety-epi`, id 0), rodando `npm run start` (modo producao)
-- **Supabase self-hosted**: Kong em `172.20.0.9:8000` (rede interna), publico em `https://supabase.faabengenharia.cloud`
+- **Supabase self-hosted**: Kong (rede interna Docker), publico em `https://supabase.faabengenharia.cloud`. O IP do container Kong **muda** quando ele reinicia — nao usar IP fixo (ver URLs abaixo).
 
 ### URLs do Supabase (importante)
-- Browser/cookies: `NEXT_PUBLIC_SUPABASE_URL` (publica, HTTPS)
-- Server/middleware: `NEXT_PUBLIC_SUPABASE_INTERNAL_URL` (Kong direto — host nao alcanca a URL publica via HTTPS)
+- **Todas as vars de URL apontam para o dominio publico** `https://supabase.faabengenharia.cloud` — browser, server e middleware. O host alcanca o dominio publico via nginx local (nginx atualiza o upstream do Kong sozinho quando o IP muda).
+- **Nao usar IP de container** (ex: `172.20.0.9:8000`) em `SUPABASE_INTERNAL_URL`/`NEXT_PUBLIC_SUPABASE_INTERNAL_URL`: o Kong troca de IP a cada restart e o app (PM2 no host) passa a dar `ECONNREFUSED` e nao abre. Incidente em 2026-06-12: Kong foi de `.9` para `.10` e derrubou o app. Corrigido apontando tudo para o dominio publico.
+- Usar a mesma URL em todos os clients tambem alinha o nome do cookie de sessao (`sb-supabase-auth-token`) entre browser e server.
 - URLs de arquivos do Storage gravadas no DB devem usar **sempre a URL publica** (o browser precisa carregar).
 - PostgREST **nao resolve joins cross-schema** (ex: `epi.movimentacoes` → `obras.obras`): buscar separado e juntar em memoria.
 
