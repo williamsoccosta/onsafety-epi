@@ -6,6 +6,17 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/). 
 
 ## [Não lançado]
 
+## [0.3.0] - 2026-07-10
+
+### Added
+- Home vira grid de cards por módulo (Dashboard, EPI, Colaboradores, Obras, Empresas, RH, Materiais, Consulta CA, Usuários), com visibilidade por perfil; sidebar lateral único vira sidebar contextual só em EPI/Materiais.
+- Módulo **Dashboard**: indicadores e gráficos extraídos da home para `/dashboard`.
+- Módulo **Empresas**: cadastro de CNPJ via consulta à Receita Federal (adapter na VPS), com preenchimento automático.
+- Módulo **Materiais**: catálogo geral de insumos da FAAB (5 segmentos, hierarquia segmento→categoria→tipo→insumo).
+- Módulo **RH**: páginas de listagem e ficha completa do funcionário.
+- Ficha do colaborador (`/colaboradores/[id]`) exibe resumo do funcionário RH vinculado (CPF, telefone, e-mail) com link para a ficha completa; listagem de colaboradores ganha coluna de status de vínculo RH.
+- Obras ganham `empresa_id` (FK para `core.empresas`), com fallback pro campo `cliente` em texto livre; agrupamento por cliente usa `empresa_id` quando disponível.
+
 ## [0.2.0] - 2026-07-10
 
 ### Added
