@@ -6,7 +6,11 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/). 
 
 ## [Não lançado]
 
+## [0.2.0] - 2026-07-10
+
 ### Added
+- Formulário `/rh/novo` dividido em duas etapas (dados básicos → dados complementares), com indicador de progresso, foco movido entre etapas e dados preservados ao voltar.
+- Validação de CPF por dígito verificador (módulo 11) no cadastro de funcionário — client bloqueia avanço, server revalida antes do insert (`src/lib/cpf.ts`).
 - `design.md` como fonte da verdade de design (tokens, componentes, acessibilidade, antipadrões).
 - `README.md` reescrito: produto, como rodar, estrutura de pastas, pointers para `AGENTS.md`/`design.md`/`CONTEXT.md`.
 - `AGENTS.md` com convenções de projeto, leitura obrigatória de `CONTEXT.md`/`design.md` antes de mexer em domínio/UI.
