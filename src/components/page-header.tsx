@@ -6,8 +6,8 @@ export function CabecalhoPagina({
 }: {
   titulo: string;
   subtitulo: string;
-  contagem: number;
-  rotulo: string;
+  contagem?: number;
+  rotulo?: string;
 }) {
   return (
     <header
@@ -22,17 +22,19 @@ export function CabecalhoPagina({
           {subtitulo}
         </p>
       </div>
-      <div
-        className="flex items-baseline gap-1.5 rounded-md border px-3 py-1.5"
-        style={{ borderColor: "var(--line)", background: "var(--surface-raised)" }}
-      >
-        <span className="text-[20px] font-semibold tabular leading-none" style={{ color: "var(--ink)" }}>
-          {String(contagem).padStart(2, "0")}
-        </span>
-        <span className="text-[11px] uppercase tracking-[0.1em]" style={{ color: "var(--ink-tertiary)" }}>
-          {rotulo}
-        </span>
-      </div>
+      {contagem != null && rotulo && (
+        <div
+          className="flex items-baseline gap-1.5 rounded-md border px-3 py-1.5"
+          style={{ borderColor: "var(--line)", background: "var(--surface-raised)" }}
+        >
+          <span className="text-[20px] font-semibold tabular leading-none" style={{ color: "var(--ink)" }}>
+            {String(contagem).padStart(2, "0")}
+          </span>
+          <span className="text-[11px] uppercase tracking-[0.1em]" style={{ color: "var(--ink-tertiary)" }}>
+            {rotulo}
+          </span>
+        </div>
+      )}
     </header>
   );
 }

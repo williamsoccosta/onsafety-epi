@@ -7,34 +7,37 @@ import { logoutAction } from "@/app/auth/actions";
 import type { PerfilUsuario, Perfil } from "@/lib/types";
 import { LABELS_PERFIL } from "@/lib/types";
 
-function getNav(perfil: Perfil) {
-  const cadastros = [
-    ...(["supervisor","almoxarife","administrativo"].includes(perfil)
-      ? [{ href: "/colaboradores", label: "Colaboradores", marca: "C" }] : []),
-    ...(["supervisor"].includes(perfil)
-      ? [{ href: "/obras", label: "Obras", marca: "O" }] : []),
-    ...(["supervisor","almoxarife"].includes(perfil)
-      ? [{ href: "/epis", label: "Catalogo EPI", marca: "E" }] : []),
-  ];
-  const operacoes = [
-    ...(["supervisor","almoxarife","tecnico_seguranca"].includes(perfil)
-      ? [
-          { href: "/movimentacoes", label: "Movimentacoes", marca: "M" },
-          { href: "/movimentacoes/nova-entrega", label: "Entrega de EPI", marca: "EE" },
-          { href: "/trocas", label: "Agenda de Trocas", marca: "AT" },
-        ] : []),
-  ];
-  const consultas = [
-    { href: "/ca", label: "Consulta CA", marca: "CA" },
-  ];
-  const admin = [
-    ...(perfil === "supervisor"
-      ? [{ href: "/usuarios", label: "Usuarios", marca: "U" }] : []),
-  ];
-  return { cadastros, operacoes, consultas, admin };
-}
-
 type NavItem2 = { href: string; label: string; marca: string };
+
+function getContextNav(pathname: string, perfil: Perfil): { title: string; items: NavItem2[] } {
+  if (pathname.startsWith("/epis") || pathname.startsWith("/movimentacoes") || pathname.startsWith("/trocas")) {
+    const items: NavItem2[] = [];
+    if (["supervisor", "almoxarife"].includes(perfil)) {
+      items.push({ href: "/epis", label: "Catalogo EPI", marca: "E" });
+    }
+    if (["supervisor", "almoxarife", "tecnico_seguranca"].includes(perfil)) {
+      items.push({ href: "/movimentacoes/nova-entrega", label: "Entrega de EPI", marca: "EE" });
+      items.push({ href: "/movimentacoes", label: "Movimentacoes", marca: "M" });
+      items.push({ href: "/trocas", label: "Agenda de Trocas", marca: "AT" });
+    }
+    return { title: "EPI", items };
+  }
+
+  if (pathname.startsWith("/materiais")) {
+    const items: NavItem2[] = [
+      { href: "/materiais", label: "Catalogo", marca: "CT" },
+    ];
+    if (["supervisor", "tecnico_seguranca"].includes(perfil)) {
+      items.push({ href: "/materiais/novo", label: "Novo insumo", marca: "NI" });
+    }
+    if (perfil === "supervisor") {
+      items.push({ href: "/materiais/hierarquia", label: "Hierarquia", marca: "HQ" });
+    }
+    return { title: "Materiais", items };
+  }
+
+  return { title: "", items: [] };
+}
 
 function NavItem({ href, label, marca, active, collapsed, onNavigate }: NavItem2 & {
   active: boolean; collapsed: boolean; onNavigate?: () => void;
@@ -64,26 +67,6 @@ function NavItem({ href, label, marca, active, collapsed, onNavigate }: NavItem2
   );
 }
 
-function NavGroup({ label, items, pathname, collapsed, onNavigate }: {
-  label: string; items: NavItem2[]; pathname: string | null; collapsed: boolean; onNavigate?: () => void;
-}) {
-  if (items.length === 0) return null;
-  return (
-    <>
-      {!collapsed && (
-        <p className="px-2.5 pt-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.14em]"
-          style={{ color: "var(--ink-muted)" }}>{label}</p>
-      )}
-      {collapsed && <div className="pt-2" />}
-      {items.map((item) => (
-        <NavItem key={item.href} {...item} active={!!pathname?.startsWith(item.href)}
-          collapsed={collapsed} onNavigate={onNavigate} />
-      ))}
-    </>
-  );
-}
-
-/** Conteudo interno reaproveitado pelo painel desktop e pelo drawer mobile. */
 function PainelInterno({ perfil, collapsed, headerRight, onNavigate }: {
   perfil: PerfilUsuario;
   collapsed: boolean;
@@ -91,42 +74,44 @@ function PainelInterno({ perfil, collapsed, headerRight, onNavigate }: {
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
-  const nav = getNav(perfil.perfil);
+  const { title, items } = getContextNav(pathname, perfil.perfil);
 
   return (
     <>
-      {/* Header */}
       <div className="px-3 pt-4 pb-4 border-b flex items-center justify-between gap-2"
         style={{ borderColor: "var(--line-soft)" }}>
         {!collapsed ? (
           <div className="flex items-center gap-2.5 min-w-0">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-sm font-bold"
-              style={{ background: "var(--accent)", color: "var(--accent-ink)" }}>CA</span>
+            <Link href="/"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-sm font-bold"
+              style={{ background: "var(--accent)", color: "var(--accent-ink)" }}>
+              CA
+            </Link>
             <div className="leading-tight min-w-0">
               <p className="text-[13px] font-semibold tracking-tight truncate" style={{ color: "var(--ink)" }}>
-                Onsafety EPI
+                {title}
               </p>
               <p className="text-[11px]" style={{ color: "var(--ink-tertiary)" }}>FAAB Engenharia</p>
             </div>
           </div>
         ) : (
-          <span className="flex h-8 w-8 mx-auto items-center justify-center rounded-md text-sm font-bold"
-            style={{ background: "var(--accent)", color: "var(--accent-ink)" }}>CA</span>
+          <Link href="/"
+            className="flex h-8 w-8 mx-auto items-center justify-center rounded-md text-sm font-bold"
+            style={{ background: "var(--accent)", color: "var(--accent-ink)" }}>
+            CA
+          </Link>
         )}
         {headerRight}
       </div>
 
-      {/* Nav */}
       <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
-        <NavGroup label="Cadastros" items={nav.cadastros} pathname={pathname} collapsed={collapsed} onNavigate={onNavigate} />
-        <NavGroup label="Operacoes" items={nav.operacoes} pathname={pathname} collapsed={collapsed} onNavigate={onNavigate} />
-        <NavGroup label="Consultas" items={nav.consultas} pathname={pathname} collapsed={collapsed} onNavigate={onNavigate} />
-        {nav.admin.length > 0 && (
-          <NavGroup label="Admin" items={nav.admin} pathname={pathname} collapsed={collapsed} onNavigate={onNavigate} />
-        )}
+        {items.map((item) => (
+          <NavItem key={item.href} {...item}
+            active={pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href + "/"))}
+            collapsed={collapsed} onNavigate={onNavigate} />
+        ))}
       </nav>
 
-      {/* User footer */}
       <div className="px-3 py-3 border-t space-y-2" style={{ borderColor: "var(--line-soft)" }}>
         {!collapsed && (
           <div>
@@ -163,7 +148,6 @@ export function Sidebar({ perfil, mobileOpen = false, onClose }: {
     if (saved === "true") setCollapsed(true);
   }, []);
 
-  // Trava o scroll do body quando o drawer mobile esta aberto
   useEffect(() => {
     if (mobileOpen) {
       document.body.style.overflow = "hidden";
@@ -181,7 +165,6 @@ export function Sidebar({ perfil, mobileOpen = false, onClose }: {
 
   return (
     <>
-      {/* ===== Desktop (>= lg): fixa e colapsavel ===== */}
       <aside className={`${w} shrink-0 border-r flex-col transition-all duration-200 hidden lg:flex`}
         style={{ background: "var(--canvas)", borderColor: "var(--line)" }}>
         <PainelInterno
@@ -197,8 +180,6 @@ export function Sidebar({ perfil, mobileOpen = false, onClose }: {
         />
       </aside>
 
-      {/* ===== Mobile/tablet (< lg): drawer off-canvas ===== */}
-      {/* Overlay */}
       <div
         onClick={onClose}
         className={`lg:hidden fixed inset-0 z-40 transition-opacity duration-200 ${
@@ -207,7 +188,6 @@ export function Sidebar({ perfil, mobileOpen = false, onClose }: {
         style={{ background: "rgba(0,0,0,0.45)" }}
         aria-hidden="true"
       />
-      {/* Drawer */}
       <aside
         className={`lg:hidden fixed inset-y-0 left-0 z-50 w-64 border-r flex flex-col transition-transform duration-200 ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
