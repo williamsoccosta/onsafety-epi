@@ -74,6 +74,7 @@ export default async function ColaboradoresPage() {
                 <Th>Funcao</Th>
                 <Th>Matricula</Th>
                 <Th>Admissao</Th>
+                <Th>RH</Th>
                 <Th align="right">Status</Th>
                 <Th align="right">Ficha</Th>
               </tr>
@@ -91,6 +92,15 @@ export default async function ColaboradoresPage() {
                   <Td><span style={{ color: "var(--ink-secondary)" }}>{col.funcao}</span></Td>
                   <Td><span className="tabular" style={{ color: "var(--ink-secondary)" }}>{col.matricula}</span></Td>
                   <Td><span className="tabular" style={{ color: "var(--ink-tertiary)" }}>{formatarData(col.data_admissao)}</span></Td>
+                  <Td>
+                    <span className="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded"
+                      style={{
+                        background: col.pessoa_id ? "var(--success-soft)" : "var(--surface-2)",
+                        color: col.pessoa_id ? "var(--success)" : "var(--ink-muted)",
+                      }}>
+                      {col.pessoa_id ? "Vinculado" : "Sem ficha"}
+                    </span>
+                  </Td>
                   <Td align="right">
                     <SeloBotao
                       variant={col.ativo ? "ok" : "off"}
@@ -112,7 +122,7 @@ export default async function ColaboradoresPage() {
               ))}
               {colaboradores?.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-10 text-center text-[13px]" style={{ color: "var(--ink-muted)" }}>
+                  <td colSpan={7} className="px-4 py-10 text-center text-[13px]" style={{ color: "var(--ink-muted)" }}>
                     Nenhum colaborador cadastrado ainda.
                   </td>
                 </tr>

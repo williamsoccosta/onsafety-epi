@@ -88,7 +88,7 @@ export default async function ObrasPage({
               <option key={c} value={c} />
             ))}
           </datalist>
-          <form action={action} className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <form action={action} className="grid grid-cols-2 lg:grid-cols-5 gap-3">
             <Campo
               label="Nome da obra"
               name="nome"
@@ -100,6 +100,12 @@ export default async function ObrasPage({
               name="cliente"
               placeholder="Ex: CHESF"
               list="clientes-list"
+              className="col-span-1"
+            />
+            <Campo
+              label="CNPJ (opcional)"
+              name="cnpj"
+              placeholder="00.000.000/0000-00"
               className="col-span-1"
             />
             <div className="col-span-1 flex items-end">

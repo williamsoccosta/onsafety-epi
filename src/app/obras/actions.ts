@@ -10,13 +10,32 @@ export async function criarObra(formData: FormData) {
 
   const nome = String(formData.get("nome") || "").trim();
   const cliente = String(formData.get("cliente") || "").trim();
+  const cnpj = String(formData.get("cnpj") || "").replace(/\D/g, "").trim();
 
   if (!nome) return { error: "Informe o nome da obra." };
+
+  const payload: Record<string, unknown> = {
+    nome,
+    cliente: cliente || null,
+  };
+
+  if (cnpj.length === 14) {
+    const { data: resultado } = await supabase
+      .schema("core")
+      .rpc("buscar_empresa", { p_cnpj: cnpj });
+
+    if (resultado?.ok && resultado.data?.id) {
+      payload.empresa_id = resultado.data.id;
+      if (!cliente) {
+        payload.cliente = resultado.data.nome_fantasia || resultado.data.razao_social;
+      }
+    }
+  }
 
   const { error } = await supabase
     .schema("obras")
     .from("obras")
-    .insert({ nome, cliente: cliente || null });
+    .insert(payload);
 
   if (error) return { error: error.message };
 

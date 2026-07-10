@@ -26,6 +26,26 @@ export default async function FichaColaborador({ params }: { params: Promise<{ i
 
   // obra_id e cross-schema (obras.obras) — PostgREST nao resolve embedded join.
   // Buscar separado e montar mapa.
+  // Buscar ficha RH se vinculada
+  type FichaRH = { id: string; cpf: string; telefone: string | null; email: string | null; endereco: Record<string, string> };
+  let fichaRH: FichaRH | null = null;
+  let funcionariosDisponiveis: { id: string; nome: string; cpf: string }[] = [];
+  if (colab.pessoa_id) {
+    const { data } = await supabase
+      .schema("rh").from("funcionarios")
+      .select("id,cpf,telefone,email,endereco")
+      .eq("id", colab.pessoa_id)
+      .single();
+    if (data) fichaRH = data as unknown as FichaRH;
+  } else {
+    const { data } = await supabase
+      .schema("rh").from("funcionarios")
+      .select("id,nome,cpf")
+      .eq("ativo", true)
+      .order("nome");
+    if (data) funcionariosDisponiveis = data as unknown as typeof funcionariosDisponiveis;
+  }
+
   const [
     { data: entregas },
     { data: obrasData },
@@ -103,6 +123,77 @@ export default async function FichaColaborador({ params }: { params: Promise<{ i
             </div>
           </div>
         </header>
+
+        {/* Resumo RH */}
+        <section className="mb-8">
+          <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.12em]"
+            style={{ color: "var(--ink-tertiary)" }}>
+            Ficha de RH
+          </p>
+          {fichaRH ? (
+            <div className="rounded-lg border p-5"
+              style={{ borderColor: "var(--line)", background: "var(--surface)" }}>
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-wrap gap-x-6 gap-y-2">
+                  <Campo rotulo="CPF" valor={fichaRH.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")} mono />
+                  <Campo rotulo="Telefone" valor={fichaRH.telefone ?? "—"} />
+                  <Campo rotulo="E-mail" valor={fichaRH.email ?? "—"} />
+                  {fichaRH.endereco?.municipio && (
+                    <Campo rotulo="Cidade" valor={`${fichaRH.endereco.municipio}/${fichaRH.endereco.uf ?? ""}`} />
+                  )}
+                </div>
+                <a href={"/rh/" + fichaRH.id}
+                  className="shrink-0 inline-flex items-center gap-1 rounded-md border px-3 py-1.5 text-[11px] font-medium transition-colors hover:opacity-80 print:hidden"
+                  style={{ borderColor: "var(--line)", background: "var(--surface-2)", color: "var(--ink-secondary)" }}>
+                  Ver ficha completa
+                </a>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-lg border p-5 space-y-4 print:hidden"
+              style={{ borderColor: "var(--line)", background: "var(--surface)" }}>
+              <div className="flex items-center justify-between">
+                <p className="text-[13px]" style={{ color: "var(--ink-muted)" }}>
+                  Ficha de RH nao vinculada.
+                </p>
+                <a href={`/rh/novo?nome=${encodeURIComponent(colab.nome)}&colaborador_id=${id}`}
+                  className="shrink-0 h-8 px-4 rounded-md text-[12px] font-semibold inline-flex items-center transition-opacity hover:opacity-90"
+                  style={{ background: "var(--accent)", color: "var(--accent-ink)" }}>
+                  Criar ficha RH
+                </a>
+              </div>
+              {funcionariosDisponiveis.length > 0 && (
+                <form action={async (formData: FormData) => {
+                  "use server";
+                  const { vincularFuncionario } = await import("@/app/rh/actions");
+                  const funcId = String(formData.get("funcionario_id") || "");
+                  if (funcId) await vincularFuncionario(id, funcId);
+                }} className="flex items-end gap-3 pt-3 border-t" style={{ borderColor: "var(--line-soft)" }}>
+                  <label className="flex-1 flex flex-col gap-1.5">
+                    <span className="text-[11px] font-medium uppercase tracking-[0.08em]" style={{ color: "var(--ink-tertiary)" }}>
+                      Ou vincular ficha existente
+                    </span>
+                    <select name="funcionario_id" required
+                      className="h-[38px] rounded-md border px-3 text-[13px] outline-none"
+                      style={{ background: "var(--control-bg)", borderColor: "var(--control-border)", color: "var(--ink)" }}>
+                      <option value="">Selecione...</option>
+                      {funcionariosDisponiveis.map((f) => (
+                        <option key={f.id} value={f.id}>
+                          {f.nome} · {f.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <button type="submit"
+                    className="h-[38px] px-4 rounded-md text-[12px] font-semibold border transition-colors"
+                    style={{ borderColor: "var(--accent)", color: "var(--accent)" }}>
+                    Vincular
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
+        </section>
 
         <section>
           <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.12em]"
