@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
-import { Selo } from "@/components/selo";
+import Link from "next/link";
 import { BotaoImprimir } from "./print-btn";
 import { ColunaAssinatura } from "./entrega-row";
 
@@ -76,10 +76,10 @@ export default async function FichaColaborador({ params }: { params: Promise<{ i
     <>
       <div className="flex items-center justify-between px-8 py-4 border-b print:hidden"
         style={{ borderColor: "var(--line)", background: "var(--surface)" }}>
-        <a href="/colaboradores" className="flex items-center gap-1.5 text-[13px]"
+        <Link href="/colaboradores" className="flex items-center gap-1.5 text-[13px]"
           style={{ color: "var(--ink-secondary)" }}>
           &#8592; Colaboradores
-        </a>
+        </Link>
         <div className="flex items-center gap-2">
           <a href={`/colaboradores/${id}/pdf`}
             className="h-9 px-4 flex items-center rounded-md text-[13px] font-semibold transition-opacity hover:opacity-90"

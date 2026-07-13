@@ -40,12 +40,14 @@ export function FiltroColuna({
     return () => document.removeEventListener("mousedown", handleMouseDown);
   }, [aberto]);
 
-  useEffect(() => {
-    if (aberto) {
+  function alternarAberto() {
+    const proximo = !aberto;
+    setAberto(proximo);
+    if (proximo) {
       setBusca(modo === "texto" ? valorAtivo : "");
       setTimeout(() => inputRef.current?.focus(), 0);
     }
-  }, [aberto, modo, valorAtivo]);
+  }
 
   function aplicarFiltro(valor: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -80,7 +82,7 @@ export function FiltroColuna({
       className={"px-4 py-3 " + (align === "right" ? "text-right" : "text-left")}
     >
       <button
-        onClick={() => setAberto(!aberto)}
+        onClick={alternarAberto}
         className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.1em] transition-opacity hover:opacity-70"
         style={{
           color: ativo ? "var(--accent)" : "var(--ink-tertiary)",

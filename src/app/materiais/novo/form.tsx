@@ -215,7 +215,7 @@ export function NovoInsumoForm({
             <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--ink)" }}>
               Outras Caracteristicas{" "}
               <span className="font-normal" style={{ color: "var(--ink-muted)" }}>
-                (Use " " para evitar formatacao de numeros. Ex: "DS1.049")
+                (Use &quot; &quot; para evitar formatacao de numeros. Ex: &quot;DS1.049&quot;)
               </span>
             </label>
             <input value={outras} onChange={(e) => setOutras(e.target.value)}

@@ -144,7 +144,10 @@ export function Sidebar({ perfil, mobileOpen = false, onClose }: {
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
+    // Le localStorage so apos o mount (evita mismatch de hidratacao SSR) —
+    // por isso o setState roda aqui e nao no useState inicial.
     const saved = localStorage.getItem("sidebar-collapsed");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (saved === "true") setCollapsed(true);
   }, []);
 
