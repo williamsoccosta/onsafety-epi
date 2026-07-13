@@ -6,6 +6,11 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/). 
 
 ## [Não lançado]
 
+## [0.3.1] - 2026-07-10
+
+### Fixed
+- 4 erros reais de lint pendentes do repo: navegação interna via `<a>` trocada por `<Link>`, aspas literais em JSX escapadas, `setState` dentro de `useEffect` reativo movido para o handler de evento em `filtro-coluna.tsx`, leitura de `localStorage` pós-mount documentada com `eslint-disable` pontual em `sidebar.tsx`.
+
 ## [0.3.0] - 2026-07-10
 
 ### Added
