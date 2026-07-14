@@ -1,6 +1,8 @@
--- Hub de sincronizacao de Pessoas Fisicas — view restrita + role dedicada (rascunho)
+-- Hub de sincronizacao de Pessoas Fisicas — view restrita + role dedicada
 -- Ver docs/regras-negocio-hub-pessoas-fisicas.md, regra 20 / duvida global 2.
--- NAO APLICADO ainda — pendente sign-off de seguranca antes de rodar em producao.
+-- APLICADO em producao em 2026-07-14 (via psql como superusuario na VPS).
+-- Mantido aqui como fonte da verdade do que existe no banco — reaplicar e
+-- seguro (idempotente: CREATE OR REPLACE VIEW + DO blocks com IF NOT EXISTS).
 -- Executar como superusuario (postgres/supabase_admin, com BYPASSRLS) para que a view
 -- herde o bypass do dono e nao exija grants diretos em rh.funcionarios para os adapters.
 
