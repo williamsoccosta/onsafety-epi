@@ -132,6 +132,12 @@ body {
   color: var(--ink);
 }
 
+/* ---- foco visivel em campos de formulario (input/select) ---- */
+.campo-foco:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--line-focus);
+}
+
 /* ---- tipografia tabular para matricula / CA / datas ---- */
 .tabular {
   font-family: var(--font-mono);

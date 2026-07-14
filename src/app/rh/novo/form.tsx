@@ -110,6 +110,9 @@ export function NovoFuncionarioForm({
         </p>
       )}
       <StepIndicator etapa={etapa} />
+      <p className="text-[11px]" style={{ color: "var(--ink-secondary)" }}>
+        * campos obrigatorios
+      </p>
 
       {/* Etapa 1 — dados basicos. Fica sempre montada (so escondida) para nao perder valor ao voltar. */}
       <div hidden={etapa !== 1} className="space-y-6">
@@ -140,7 +143,7 @@ export function NovoFuncionarioForm({
           <button
             type="button"
             onClick={avancar}
-            className="h-10 px-6 rounded-md text-[13px] font-semibold transition-opacity hover:opacity-90"
+            className="h-11 px-6 rounded-md text-[13px] font-semibold transition-opacity hover:opacity-90 campo-foco"
             style={{ background: "var(--accent)", color: "var(--accent-ink)" }}
           >
             Avancar
@@ -243,7 +246,7 @@ export function NovoFuncionarioForm({
             <button
               type="button"
               onClick={voltar}
-              className="h-10 px-5 rounded-md border text-[13px] font-semibold transition-colors"
+              className="h-11 px-5 rounded-md border text-[13px] font-semibold transition-colors campo-foco"
               style={{ borderColor: "var(--control-border)", color: "var(--ink-secondary)" }}
             >
               Voltar
@@ -257,11 +260,14 @@ export function NovoFuncionarioForm({
           <button
             type="submit"
             disabled={loading}
-            className="h-10 px-6 rounded-md text-[13px] font-semibold transition-opacity hover:opacity-90 disabled:opacity-50"
+            className="h-11 px-6 rounded-md text-[13px] font-semibold transition-opacity hover:opacity-90 disabled:opacity-50 campo-foco"
             style={{ background: "var(--accent)", color: "var(--accent-ink)" }}
           >
             {loading ? "Salvando..." : "Cadastrar funcionario"}
           </button>
+          <span role="status" aria-live="polite" className="sr-only">
+            {loading ? "Salvando cadastro..." : ""}
+          </span>
         </div>
       </div>
     </form>
@@ -320,7 +326,7 @@ function Campo({
   const erroId = erro ? `${name}-erro` : undefined;
   return (
     <label className={"flex flex-col gap-1.5 " + className}>
-      <span className="text-[11px] font-medium uppercase tracking-[0.08em]" style={{ color: "var(--ink-tertiary)" }}>
+      <span className="text-[11px] font-medium uppercase tracking-[0.08em]" style={{ color: "var(--ink-secondary)" }}>
         {label}{required && " *"}
       </span>
       <input
@@ -329,7 +335,7 @@ function Campo({
         onChange={onChange}
         aria-invalid={erro ? true : undefined}
         aria-describedby={erroId}
-        className={"h-[38px] rounded-md border px-3 text-[13px] outline-none " + (mono ? "tabular" : "")}
+        className={"h-11 rounded-md border px-3 text-[13px] outline-none campo-foco " + (mono ? "tabular" : "")}
         style={{
           background: "var(--control-bg)",
           borderColor: erro ? "var(--danger)" : "var(--control-border)",
@@ -352,12 +358,12 @@ function CampoSelect({
 }) {
   return (
     <label className={"flex flex-col gap-1.5 " + className}>
-      <span className="text-[11px] font-medium uppercase tracking-[0.08em]" style={{ color: "var(--ink-tertiary)" }}>
+      <span className="text-[11px] font-medium uppercase tracking-[0.08em]" style={{ color: "var(--ink-secondary)" }}>
         {label}
       </span>
       <select
         name={name}
-        className="h-[38px] rounded-md border px-3 text-[13px] outline-none"
+        className="h-11 rounded-md border px-3 text-[13px] outline-none campo-foco"
         style={{ background: "var(--control-bg)", borderColor: "var(--control-border)", color: "var(--ink)" }}
       >
         {children}
