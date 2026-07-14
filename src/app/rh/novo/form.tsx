@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { criarFuncionario } from "../actions";
 import { cpfValido } from "@/lib/cpf";
 
@@ -19,26 +20,38 @@ export function NovoFuncionarioForm({
 
   const [etapa, setEtapa] = useState<1 | 2>(1);
   const [cpfErro, setCpfErro] = useState<string | null>(null);
+  const [telefoneErro, setTelefoneErro] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+  const [duplicado, setDuplicado] = useState<{ id: string; nome: string } | null>(null);
   const [loading, setLoading] = useState(false);
 
   function avancar() {
     const fd = new FormData(formRef.current!);
     const nome = String(fd.get("nome") || "").trim();
     const cpf = String(fd.get("cpf") || "");
+    const telefone = String(fd.get("telefone") || "").trim();
 
     if (!nome) {
       setCpfErro(null);
+      setTelefoneErro(null);
       (formRef.current!.elements.namedItem("nome") as HTMLInputElement)?.focus();
       return;
     }
     if (!cpfValido(cpf)) {
       setCpfErro("CPF invalido — confira os digitos.");
+      setTelefoneErro(null);
       (formRef.current!.elements.namedItem("cpf") as HTMLInputElement)?.focus();
+      return;
+    }
+    if (!telefone) {
+      setCpfErro(null);
+      setTelefoneErro("Telefone e obrigatorio.");
+      (formRef.current!.elements.namedItem("telefone") as HTMLInputElement)?.focus();
       return;
     }
 
     setCpfErro(null);
+    setTelefoneErro(null);
     setEtapa(2);
     // move o foco para o titulo da nova etapa apos o proximo paint
     requestAnimationFrame(() => step2HeadingRef.current?.focus());
@@ -51,20 +64,32 @@ export function NovoFuncionarioForm({
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!cpfValido(String(new FormData(e.currentTarget).get("cpf") || ""))) {
+    const fd = new FormData(e.currentTarget);
+    if (!cpfValido(String(fd.get("cpf") || ""))) {
       setEtapa(1);
       setCpfErro("CPF invalido — confira os digitos.");
       requestAnimationFrame(() => step1HeadingRef.current?.focus());
       return;
     }
+    if (!String(fd.get("telefone") || "").trim()) {
+      setEtapa(1);
+      setTelefoneErro("Telefone e obrigatorio.");
+      requestAnimationFrame(() => step1HeadingRef.current?.focus());
+      return;
+    }
     setErro(null);
+    setDuplicado(null);
     setLoading(true);
-    const fd = new FormData(e.currentTarget);
     if (colaboradorId) fd.set("colaborador_id", colaboradorId);
     const res = await criarFuncionario(fd);
     if (res?.error) {
       setErro(res.error);
+      setDuplicado(res.duplicado ?? null);
       setLoading(false);
+      if (res.duplicado) {
+        setEtapa(1);
+        requestAnimationFrame(() => step1HeadingRef.current?.focus());
+      }
     } else {
       router.push("/rh");
     }
@@ -72,6 +97,18 @@ export function NovoFuncionarioForm({
 
   return (
     <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
+      {duplicado && (
+        <p
+          role="alert"
+          className="rounded-md border px-4 py-3 text-[13px]"
+          style={{ borderColor: "var(--danger)", background: "var(--danger-soft)", color: "var(--danger)" }}
+        >
+          CPF ja cadastrado para {duplicado.nome}.{" "}
+          <Link href={"/rh/" + duplicado.id} className="underline font-semibold">
+            Ver ficha existente
+          </Link>
+        </p>
+      )}
       <StepIndicator etapa={etapa} />
 
       {/* Etapa 1 — dados basicos. Fica sempre montada (so escondida) para nao perder valor ao voltar. */}
@@ -87,7 +124,14 @@ export function NovoFuncionarioForm({
               erro={cpfErro ?? undefined}
               onChange={() => cpfErro && setCpfErro(null)}
             />
-            <Campo label="Telefone" name="telefone" placeholder="(00) 00000-0000" />
+            <Campo
+              label="Telefone"
+              name="telefone"
+              placeholder="(00) 00000-0000"
+              required
+              erro={telefoneErro ?? undefined}
+              onChange={() => telefoneErro && setTelefoneErro(null)}
+            />
             <Campo label="E-mail" name="email" type="email" className="sm:col-span-2" />
           </div>
         </Secao>

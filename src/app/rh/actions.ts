@@ -11,9 +11,24 @@ export async function criarFuncionario(formData: FormData) {
 
   const nome = String(formData.get("nome") || "").trim();
   const cpf = limparCpf(String(formData.get("cpf") || ""));
+  const telefone = String(formData.get("telefone") || "").trim();
 
   if (!nome || !cpf) return { error: "Nome e CPF sao obrigatorios." };
   if (!cpfValido(cpf)) return { error: "CPF invalido — confira os digitos." };
+  if (!telefone) return { error: "Telefone e obrigatorio." };
+
+  const { data: existente } = await supabase
+    .schema("rh")
+    .from("funcionarios")
+    .select("id, nome")
+    .eq("cpf", cpf)
+    .maybeSingle();
+  if (existente) {
+    return {
+      error: `CPF ja cadastrado para ${existente.nome}.`,
+      duplicado: { id: existente.id as string, nome: existente.nome as string },
+    };
+  }
 
   const documentos: Record<string, unknown> = {};
   const ctpsNumero = String(formData.get("ctps_numero") || "").trim();
@@ -75,7 +90,7 @@ export async function criarFuncionario(formData: FormData) {
     nome_pai: String(formData.get("nome_pai") || "").trim() || null,
     nome_mae: String(formData.get("nome_mae") || "").trim() || null,
     email: String(formData.get("email") || "").trim() || null,
-    telefone: String(formData.get("telefone") || "").trim() || null,
+    telefone,
     estado_civil: formData.get("estado_civil") || null,
     regime_casamento: String(formData.get("regime_casamento") || "").trim() || null,
     data_casamento: formData.get("data_casamento") || null,
@@ -87,7 +102,18 @@ export async function criarFuncionario(formData: FormData) {
   const { error } = await supabase.schema("rh").from("funcionarios").insert(payload);
 
   if (error) {
-    if (error.code === "23505") return { error: "CPF ja cadastrado." };
+    if (error.code === "23505") {
+      const { data: dup } = await supabase
+        .schema("rh")
+        .from("funcionarios")
+        .select("id, nome")
+        .eq("cpf", cpf)
+        .maybeSingle();
+      return {
+        error: dup ? `CPF ja cadastrado para ${dup.nome}.` : "CPF ja cadastrado.",
+        duplicado: dup ? { id: dup.id as string, nome: dup.nome as string } : undefined,
+      };
+    }
     return { error: error.message };
   }
 

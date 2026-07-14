@@ -6,6 +6,10 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/). 
 
 ## [Não lançado]
 
+### Added
+- Cadastro de funcionário (`/rh/novo`): telefone passa a ser obrigatório na etapa 1 (e-mail continua opcional), alinhado à decisão de negócio do hub de pessoas físicas.
+- Cadastro de funcionário: CPF duplicado é checado antes de persistir, com aviso no topo do formulário e link direto para a ficha já existente.
+
 ## [0.3.1] - 2026-07-10
 
 ### Fixed
