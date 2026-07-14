@@ -60,6 +60,7 @@ export function NovoInsumoForm({
   const [tipId, setTipId] = useState(tipoInicial);
   const [erro, setErro] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [sucesso, setSucesso] = useState(false);
 
   // Campos do formulário para preview ERP
   const [nome, setNome] = useState("");
@@ -131,7 +132,30 @@ export function NovoInsumoForm({
 
     const res = await cadastrarInsumo(fd);
     if (res?.error) { setErro(res.error); setLoading(false); }
-    else router.push("/materiais");
+    else { setSucesso(true); setLoading(false); }
+  }
+
+  if (sucesso) {
+    return (
+      <div className="max-w-lg mx-auto">
+        <div
+          className="rounded-md p-4"
+          style={{ background: "var(--success-soft)", borderLeft: "4px solid var(--success)" }}
+        >
+          <p className="text-[13px] font-medium" style={{ color: "var(--success)" }}>
+            Material enviado para aprovação.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => router.push("/materiais")}
+          className="mt-4 text-[13px] font-medium underline"
+          style={{ color: "var(--accent)" }}
+        >
+          Voltar para materiais
+        </button>
+      </div>
+    );
   }
 
   return (
