@@ -39,6 +39,7 @@ Detalhamento de regras, estados de UI, acessibilidade e métricas: ver [docs/reg
 
 ## Criterios de aceite
 1. CPF com dígito verificador inválido bloqueia o avanço da etapa 1, com erro específico.
+1b. Nome, CPF e telefone são obrigatórios pra avançar da etapa 1; e-mail é opcional (ver regra 5 e dúvida global 7 em [docs/regras-negocio-hub-pessoas-fisicas.md](regras-negocio-hub-pessoas-fisicas.md)).
 2. Voltar da etapa 2 para a etapa 1 preserva os dados já preenchidos.
 3. CPF já existente em `rh.funcionarios` gera aviso de duplicidade com link para a ficha, antes de persistir.
 4. Divergência detectada em `/reconciliar` aparece em `GET /propostas` com `diff` preenchido e `dominio: "pessoas"`.
