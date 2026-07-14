@@ -4,9 +4,14 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requirePerfil } from "@/lib/auth";
 
+// Base do insumos-service (faab-data-engineering). Alcancado por loopback interno na VPS
+// (porta 8082 publicada so em 127.0.0.1) - o insert direto em core.insumos foi substituido
+// por esta chamada: a gravacao passa a exigir aprovacao humana na fila do insumos-service
+// (ver docs/adr/0009-onsafety-epi-consome-insumos-service-via-api.md no faab-data-engineering).
+const INSUMOS_SERVICE_URL = process.env.INSUMOS_SERVICE_URL ?? "http://127.0.0.1:8082";
+
 export async function cadastrarInsumo(formData: FormData) {
   await requirePerfil("supervisor", "tecnico_seguranca");
-  const supabase = await createClient();
 
   const segmento_id = String(formData.get("segmento_id") || "").trim();
   const categoria_id = String(formData.get("categoria_id") || "").trim();
@@ -71,8 +76,28 @@ export async function cadastrarInsumo(formData: FormData) {
   const ficha_tecnica_id = String(formData.get("ficha_tecnica_id") || "").trim();
   if (ficha_tecnica_id) payload.ficha_tecnica_id = ficha_tecnica_id;
 
-  const { error } = await supabase.schema("core").from("insumos").insert(payload);
-  if (error) return { error: error.message };
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 20000);
+  let resp: Response;
+  try {
+    resp = await fetch(`${INSUMOS_SERVICE_URL}/api/insumo`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+      cache: "no-store",
+    });
+  } catch {
+    clearTimeout(timeout);
+    return { error: "Nao foi possivel contatar o servico de insumos. Tente novamente." };
+  }
+  clearTimeout(timeout);
+
+  if (!resp.ok) {
+    const data = await resp.json().catch(() => null);
+    const msg = (data && typeof data.erro === "string" && data.erro) || `Falha ao registrar (HTTP ${resp.status}).`;
+    return { error: msg };
+  }
 
   revalidatePath("/materiais");
   return { error: null };
