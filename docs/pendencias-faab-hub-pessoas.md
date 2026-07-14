@@ -1,6 +1,6 @@
 # Pendências para decisão da FAAB — Hub de Pessoas Físicas
 
-Duas questões ainda travam o início da implementação do [PRD do Hub de Pessoas](prd-hub-pessoas-fisicas.md). As demais dúvidas já foram resolvidas tecnicamente (ver [detalhamento completo](regras-negocio-hub-pessoas-fisicas.md)). Estas duas dependem de informação ou decisão que só a FAAB tem.
+Uma questão ainda trava o início da implementação do [PRD do Hub de Pessoas](prd-hub-pessoas-fisicas.md). As demais dúvidas já foram resolvidas tecnicamente (ver [detalhamento completo](regras-negocio-hub-pessoas-fisicas.md)) — inclusive o tratamento do CPF legado, decidido em 2026-07-14 (campanha de correção manual; ver seção abaixo).
 
 ---
 
@@ -16,24 +16,14 @@ Duas questões ainda travam o início da implementação do [PRD do Hub de Pesso
 
 ---
 
-## 2. CPFs já cadastrados sem dígito verificador válido
+## 2. CPFs já cadastrados sem dígito verificador válido — ✅ Decidido em 2026-07-14
 
-**O que encontramos**: fizemos uma auditoria (agregada, sem expor dado pessoal) na base atual de `rh.funcionarios` e **100% dos registros cadastrados hoje têm CPF com dígito verificador inválido**. Não é uma minoria — é a base inteira.
+Auditoria mostrou **10 de 10 registros (100%)** com CPF inválido. Dado o tamanho pequeno da base, foi escolhida a **campanha de correção manual**: revisar e corrigir cada um dos 10 CPFs comparando com o documento oficial, antes de ativar os adapters de pessoa. A lista dos funcionários afetados (nome + CPF atual + link da ficha) foi gerada e entregue fora deste repositório — não é versionada aqui por conter dado pessoal.
 
-**Por que isso importa**: o hub usa o CPF como chave única para casar o cadastro do funcionário com os sistemas externos (UAU, Kamino, Radar). Se o CPF estiver incorreto, o casamento pode falhar silenciosamente ou casar com a pessoa errada.
-
-**Três caminhos possíveis — a FAAB precisa escolher um**:
-
-| Opção | O que significa | Trade-off |
-|---|---|---|
-| **(a) Aceitar como está** | O hub passa a reconciliar com os CPFs já cadastrados, mesmo sabendo que o dígito verificador falha | Mais rápido de implementar, mas risco de casamento incorreto ou proposta rejeitada por divergência em 100% dos casos iniciais |
-| **(b) Campanha de correção manual** | Alguém da FAAB revisa e corrige os 10 CPFs cadastrados antes de ativar os adapters | Mais seguro, mas exige esforço manual antes de ligar a sincronização |
-| **(c) Validar só cadastros novos** | Novos cadastros exigem CPF com dígito válido; registros já existentes continuam editáveis sem essa exigência | Meio-termo — não trava o uso do RH hoje, mas adia o problema pros registros antigos |
-
-**Pergunta direta pra levar à FAAB**: qual das três opções acima? Se for a (b), quem vai revisar os cadastros — Supervisor, Administrativo, ou outra pessoa?
+**Ainda em aberto**: quem vai revisar os cadastros (Supervisor, Administrativo, ou outra pessoa) e até quando — os adapters de pessoa não devem ser ativados antes da campanha fechar.
 
 ---
 
 ## Enquanto isso
 
-Nada nas duas pendências acima bloqueia o resto da implementação (formulário em duas etapas, adapter `uau-pessoas`, tabela de mapa de IDs, extensão da tela `/aprovacoes`). Só o adapter `radar` (pendência 1) e a decisão de tratamento do CPF legado (pendência 2) dependem dessas respostas.
+Nada na pendência acima bloqueia o resto da implementação (formulário em duas etapas, adapter `uau-pessoas`, tabela de mapa de IDs, extensão da tela `/aprovacoes`). Só o adapter `radar` (pendência 1) segue esperando o layout do CSV.
