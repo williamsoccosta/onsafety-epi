@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { logoutAction } from "@/app/auth/actions";
 import type { PerfilUsuario, Perfil } from "@/lib/types";
 import { LABELS_PERFIL } from "@/lib/types";
@@ -44,6 +44,7 @@ function NavItem({ href, label, marca, active, collapsed, onNavigate }: NavItem2
 }) {
   return (
     <Link href={href} onClick={onNavigate}
+      aria-current={active ? "page" : undefined}
       className="flex items-center gap-2.5 rounded-md py-2 text-[13px] transition-colors"
       style={{
         padding: "8px 10px",
@@ -142,6 +143,7 @@ export function Sidebar({ perfil, mobileOpen = false, onClose }: {
   onClose?: () => void;
 }) {
   const [collapsed, setCollapsed] = useState(false);
+  const mobileAsideRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     // Le localStorage so apos o mount (evita mismatch de hidratacao SSR) —
@@ -154,6 +156,7 @@ export function Sidebar({ perfil, mobileOpen = false, onClose }: {
   useEffect(() => {
     if (mobileOpen) {
       document.body.style.overflow = "hidden";
+      mobileAsideRef.current?.focus();
       return () => { document.body.style.overflow = ""; };
     }
   }, [mobileOpen]);
@@ -174,7 +177,9 @@ export function Sidebar({ perfil, mobileOpen = false, onClose }: {
           perfil={perfil}
           collapsed={collapsed}
           headerRight={
-            <button onClick={toggle} className="shrink-0 flex items-center justify-center h-7 w-7 rounded-md transition-colors"
+            <button onClick={toggle}
+              aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
+              className="shrink-0 flex items-center justify-center h-9 w-9 rounded-md transition-colors"
               style={{ color: "var(--ink-tertiary)" }}
               title={collapsed ? "Expandir menu" : "Recolher menu"}>
               {collapsed ? "»" : "«"}
@@ -192,6 +197,11 @@ export function Sidebar({ perfil, mobileOpen = false, onClose }: {
         aria-hidden="true"
       />
       <aside
+        ref={mobileAsideRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        onKeyDown={(e) => { if (e.key === "Escape") onClose?.(); }}
         className={`lg:hidden fixed inset-y-0 left-0 z-50 w-64 border-r flex flex-col transition-transform duration-200 ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
@@ -202,7 +212,7 @@ export function Sidebar({ perfil, mobileOpen = false, onClose }: {
           collapsed={false}
           onNavigate={onClose}
           headerRight={
-            <button onClick={onClose} className="shrink-0 flex items-center justify-center h-7 w-7 rounded-md text-[18px] leading-none"
+            <button onClick={onClose} className="shrink-0 flex items-center justify-center h-9 w-9 rounded-md text-[18px] leading-none"
               style={{ color: "var(--ink-tertiary)" }}
               aria-label="Fechar menu">
               ×

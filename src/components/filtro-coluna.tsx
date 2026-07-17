@@ -83,6 +83,8 @@ export function FiltroColuna({
     >
       <button
         onClick={alternarAberto}
+        aria-expanded={aberto}
+        aria-haspopup={modo === "opcoes" ? "listbox" : "dialog"}
         className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.1em] transition-opacity hover:opacity-70"
         style={{
           color: ativo ? "var(--accent)" : "var(--ink-tertiary)",
@@ -136,11 +138,12 @@ export function FiltroColuna({
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
             placeholder={placeholder}
+            aria-label={rotulo}
             onKeyDown={(e) => {
               if (e.key === "Enter" && modo === "texto") aplicarFiltro(busca);
               if (e.key === "Escape") { setAberto(false); setBusca(""); }
             }}
-            className="w-full h-[32px] px-3 rounded-md border text-[12px] outline-none"
+            className="w-full h-[32px] px-3 rounded-md border text-[12px]"
             style={{
               background: "var(--control-bg)",
               borderColor: "var(--control-border)",
@@ -160,6 +163,8 @@ export function FiltroColuna({
 
           {modo === "opcoes" && opcoesFiltradas.length > 0 && (
             <ul
+              role="listbox"
+              aria-label={rotulo}
               style={{
                 maxHeight: 200,
                 overflowY: "auto",
@@ -174,9 +179,11 @@ export function FiltroColuna({
               {opcoesFiltradas.map((opcao) => {
                 const selecionado = valorAtivo === opcao;
                 return (
-                  <li key={opcao}>
+                  <li key={opcao} role="presentation">
                     <button
                       onClick={() => selecionado ? limparFiltro() : aplicarFiltro(opcao)}
+                      role="option"
+                      aria-selected={selecionado}
                       className="w-full text-left px-3 py-1.5 rounded text-[12px] transition-colors hover:opacity-80"
                       style={{
                         background: selecionado ? "var(--accent)" : "transparent",
