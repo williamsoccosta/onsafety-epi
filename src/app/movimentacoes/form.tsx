@@ -75,7 +75,7 @@ export function MovForm({
               name="motivo"
               value={motivo}
               onChange={(e) => setMotivo(e.target.value)}
-              className="h-[38px] rounded-md border px-3 text-[13px] outline-none"
+              className="h-11 rounded-md border px-3 text-[13px] outline-none campo-foco"
               style={{ background: "var(--control-bg)", borderColor: "var(--control-border)", color: "var(--ink)" }}
             >
               {MOTIVOS.map((m) => <option key={m} value={m}>{m}</option>)}
@@ -88,6 +88,7 @@ export function MovForm({
             </span>
             <div className="relative">
               <span
+                aria-hidden="true"
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] font-semibold"
                 style={{ color: ehSaida ? "var(--danger)" : "var(--success)" }}
               >
@@ -99,7 +100,8 @@ export function MovForm({
                 min="1"
                 defaultValue="1"
                 required
-                className="w-full h-[38px] rounded-md border pl-7 pr-3 text-[13px] tabular outline-none"
+                aria-label={`Quantidade (${ehSaida ? "saida" : "entrada"})`}
+                className="w-full h-11 rounded-md border pl-7 pr-3 text-[13px] tabular outline-none campo-foco"
                 style={{ background: "var(--control-bg)", borderColor: "var(--control-border)", color: "var(--ink)" }}
               />
             </div>
@@ -122,7 +124,7 @@ export function MovForm({
               <input
                 name="observacao"
                 placeholder="Opcional"
-                className="h-[38px] rounded-md border px-3 text-[13px] outline-none"
+                className="h-11 rounded-md border px-3 text-[13px] outline-none campo-foco"
                 style={{ background: "var(--control-bg)", borderColor: "var(--control-border)", color: "var(--ink)" }}
               />
             </label>
@@ -137,7 +139,7 @@ export function MovForm({
             <input
               name="observacao"
               placeholder="Opcional"
-              className="h-[38px] rounded-md border px-3 text-[13px] outline-none"
+              className="h-11 rounded-md border px-3 text-[13px] outline-none campo-foco"
               style={{ background: "var(--control-bg)", borderColor: "var(--control-border)", color: "var(--ink)" }}
             />
           </label>
@@ -146,15 +148,15 @@ export function MovForm({
         <div className="flex items-center justify-between">
           <div>
             {erro && (
-              <p className="text-[13px]" style={{ color: "var(--danger)" }}>{erro}</p>
+              <p role="alert" className="text-[13px]" style={{ color: "var(--danger)" }}>{erro}</p>
             )}
             {ok && (
-              <p className="text-[13px]" style={{ color: "var(--success)" }}>Movimentacao registrada.</p>
+              <p role="status" className="text-[13px]" style={{ color: "var(--success)" }}>Movimentacao registrada.</p>
             )}
           </div>
           <button
             type="submit"
-            className="h-[38px] px-5 rounded-md text-[13px] font-semibold transition-opacity hover:opacity-90 shrink-0"
+            className="h-11 px-5 rounded-md text-[13px] font-semibold transition-opacity hover:opacity-90 shrink-0 campo-foco"
             style={{ background: "var(--accent)", color: "var(--accent-ink)" }}
           >
             Registrar
@@ -186,7 +188,7 @@ function Select({
       <select
         name={name}
         required={required}
-        className="h-[38px] rounded-md border px-3 text-[13px] outline-none"
+        className="h-11 rounded-md border px-3 text-[13px] outline-none campo-foco"
         style={{ background: "var(--control-bg)", borderColor: "var(--control-border)", color: "var(--ink)" }}
       >
         {children}

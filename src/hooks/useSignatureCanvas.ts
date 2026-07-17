@@ -91,5 +91,12 @@ export function useSignatureCanvas(opts: Options = {}) {
     setEmpty(true);
   }, []);
 
-  return { canvasRef, empty, clear };
+  // Marca o canvas como "nao vazio" quando o conteudo e preenchido
+  // programaticamente (ex: modo "Digitar nome" desenhando texto via
+  // ctx.fillText), sem passar pelos handlers de mouse/touch.
+  // Aditivo: nao altera o comportamento nem a assinatura dos retornos
+  // existentes, apenas expoe mais uma funcao no objeto retornado.
+  const markNotEmpty = useCallback(() => { setEmpty(false); }, []);
+
+  return { canvasRef, empty, clear, markNotEmpty };
 }

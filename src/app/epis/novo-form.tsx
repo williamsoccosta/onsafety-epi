@@ -60,7 +60,7 @@ export function NovoEPIForm() {
                 name="ca"
                 placeholder="Ex: 365"
                 onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), buscarCA((e.target as HTMLInputElement).value))}
-                className="flex-1 h-[38px] rounded-md border px-3 text-[13px] tabular outline-none"
+                className="flex-1 h-11 rounded-md border px-3 text-[13px] tabular outline-none campo-foco"
                 style={{ background: "var(--control-bg)", borderColor: caResult?.found === false ? "rgba(163,50,31,0.5)" : caResult?.found ? "rgba(91,107,58,0.5)" : "var(--control-border)", color: "var(--ink)" }}
               />
               <button
@@ -69,7 +69,8 @@ export function NovoEPIForm() {
                   const inp = (e.currentTarget.parentElement?.querySelector("input") as HTMLInputElement);
                   buscarCA(inp?.value ?? "");
                 }}
-                className="h-[38px] px-3 rounded-md border text-[11px] font-semibold transition-opacity hover:opacity-80"
+                aria-label="Buscar dados do CA informado"
+                className="h-11 min-w-[44px] px-3 rounded-md border text-[11px] font-semibold transition-opacity hover:opacity-80 campo-foco"
                 style={{ borderColor: "var(--line)", background: "var(--surface-2)", color: "var(--ink-secondary)" }}
               >
                 {buscando ? "..." : "Buscar"}
@@ -96,7 +97,7 @@ export function NovoEPIForm() {
               name="nome"
               required
               placeholder="Ex: Capacete Classe E"
-              className="h-[38px] rounded-md border px-3 text-[13px] outline-none"
+              className="h-11 rounded-md border px-3 text-[13px] outline-none campo-foco"
               style={{ background: "var(--control-bg)", borderColor: "var(--control-border)", color: "var(--ink)" }}
             />
           </label>
@@ -110,7 +111,7 @@ export function NovoEPIForm() {
               ref={validadeRef}
               name="ca_validade"
               type="date"
-              className="h-[38px] rounded-md border px-3 text-[13px] tabular outline-none"
+              className="h-11 rounded-md border px-3 text-[13px] tabular outline-none campo-foco"
               style={{ background: "var(--control-bg)", borderColor: "var(--control-border)", color: "var(--ink)" }}
             />
           </label>
@@ -124,7 +125,7 @@ export function NovoEPIForm() {
             <input
               name="complemento"
               placeholder="Ex: Aba Total, TAM. G, Azul"
-              className="h-[38px] rounded-md border px-3 text-[13px] outline-none"
+              className="h-11 rounded-md border px-3 text-[13px] outline-none campo-foco"
               style={{ background: "var(--control-bg)", borderColor: "var(--control-border)", color: "var(--ink)" }}
             />
           </label>
@@ -138,7 +139,7 @@ export function NovoEPIForm() {
               type="number"
               min="1"
               placeholder="Ex: 180"
-              className="h-[38px] rounded-md border px-3 text-[13px] tabular outline-none"
+              className="h-11 rounded-md border px-3 text-[13px] tabular outline-none campo-foco"
               style={{ background: "var(--control-bg)", borderColor: "var(--control-border)", color: "var(--ink)" }}
             />
           </label>
@@ -152,7 +153,7 @@ export function NovoEPIForm() {
               type="number"
               min="1"
               placeholder="Ex: 1"
-              className="h-[38px] rounded-md border px-3 text-[13px] tabular outline-none"
+              className="h-11 rounded-md border px-3 text-[13px] tabular outline-none campo-foco"
               style={{ background: "var(--control-bg)", borderColor: "var(--control-border)", color: "var(--ink)" }}
             />
           </label>
@@ -161,7 +162,7 @@ export function NovoEPIForm() {
         <div className="flex justify-end">
           <button
             type="submit"
-            className="h-[38px] px-5 rounded-md text-[13px] font-semibold transition-opacity hover:opacity-90"
+            className="h-11 px-5 rounded-md text-[13px] font-semibold transition-opacity hover:opacity-90 campo-foco"
             style={{ background: "var(--accent)", color: "var(--accent-ink)" }}
           >
             Cadastrar EPI

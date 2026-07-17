@@ -179,7 +179,7 @@ export function Sidebar({ perfil, mobileOpen = false, onClose }: {
           headerRight={
             <button onClick={toggle}
               aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
-              className="shrink-0 flex items-center justify-center h-9 w-9 rounded-md transition-colors"
+              className="shrink-0 flex items-center justify-center h-11 w-11 rounded-md transition-colors"
               style={{ color: "var(--ink-tertiary)" }}
               title={collapsed ? "Expandir menu" : "Recolher menu"}>
               {collapsed ? "»" : "«"}
@@ -190,10 +190,10 @@ export function Sidebar({ perfil, mobileOpen = false, onClose }: {
 
       <div
         onClick={onClose}
-        className={`lg:hidden fixed inset-0 z-40 transition-opacity duration-200 ${
+        className={`lg:hidden fixed inset-0 transition-opacity duration-200 ${
           mobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
-        style={{ background: "rgba(0,0,0,0.45)" }}
+        style={{ background: "rgba(0,0,0,0.45)", zIndex: "var(--z-overlay)" }}
         aria-hidden="true"
       />
       <aside
@@ -202,17 +202,17 @@ export function Sidebar({ perfil, mobileOpen = false, onClose }: {
         role="dialog"
         aria-modal="true"
         onKeyDown={(e) => { if (e.key === "Escape") onClose?.(); }}
-        className={`lg:hidden fixed inset-y-0 left-0 z-50 w-64 border-r flex flex-col transition-transform duration-200 ${
+        className={`lg:hidden fixed inset-y-0 left-0 w-64 border-r flex flex-col transition-transform duration-200 ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
-        style={{ background: "var(--canvas)", borderColor: "var(--line)" }}
+        style={{ background: "var(--canvas)", borderColor: "var(--line)", zIndex: "var(--z-dropdown)" }}
       >
         <PainelInterno
           perfil={perfil}
           collapsed={false}
           onNavigate={onClose}
           headerRight={
-            <button onClick={onClose} className="shrink-0 flex items-center justify-center h-9 w-9 rounded-md text-[18px] leading-none"
+            <button onClick={onClose} className="shrink-0 flex items-center justify-center h-11 w-11 rounded-md text-[18px] leading-none"
               style={{ color: "var(--ink-tertiary)" }}
               aria-label="Fechar menu">
               ×

@@ -45,6 +45,11 @@
   --space-4: 16px;
   --space-6: 24px;
   --space-8: 32px;
+
+  /* Escala de z-index -- evita numeros magicos espalhados nos componentes */
+  --z-header: 30;
+  --z-overlay: 40;
+  --z-dropdown: 50;
 }
 
 * {

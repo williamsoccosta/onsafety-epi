@@ -35,27 +35,27 @@ export default function LoginPage() {
           </p>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-[0.1em] mb-1.5"
+              <label htmlFor="login-email" className="block text-[11px] font-semibold uppercase tracking-[0.1em] mb-1.5"
                 style={{ color: "var(--ink-muted)" }}>E-mail</label>
-              <input name="email" type="email" required autoComplete="email"
-                className="w-full h-10 rounded-md border px-3 text-[13px] outline-none"
+              <input id="login-email" name="email" type="email" required autoComplete="email"
+                className="w-full h-11 rounded-md border px-3 text-[13px] outline-none campo-foco"
                 style={{ background: "var(--control-bg)", borderColor: "var(--control-border)", color: "var(--ink)" }} />
             </div>
             <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-[0.1em] mb-1.5"
+              <label htmlFor="login-password" className="block text-[11px] font-semibold uppercase tracking-[0.1em] mb-1.5"
                 style={{ color: "var(--ink-muted)" }}>Senha</label>
-              <input name="password" type="password" required autoComplete="current-password"
-                className="w-full h-10 rounded-md border px-3 text-[13px] outline-none"
+              <input id="login-password" name="password" type="password" required autoComplete="current-password"
+                className="w-full h-11 rounded-md border px-3 text-[13px] outline-none campo-foco"
                 style={{ background: "var(--control-bg)", borderColor: "var(--control-border)", color: "var(--ink)" }} />
             </div>
             {error && (
-              <p className="text-[13px] rounded-md border px-3 py-2"
+              <p role="alert" className="text-[13px] rounded-md border px-3 py-2"
                 style={{ color: "var(--danger)", borderColor: "rgba(163,50,31,0.3)", background: "var(--danger-soft)" }}>
                 {error}
               </p>
             )}
             <button type="submit" disabled={loading}
-              className="w-full h-10 rounded-md text-[13px] font-semibold transition-opacity disabled:opacity-60"
+              className="w-full h-11 rounded-md text-[13px] font-semibold transition-opacity disabled:opacity-60 campo-foco"
               style={{ background: "var(--accent)", color: "var(--accent-ink)" }}>
               {loading ? "Entrando..." : "Entrar"}
             </button>

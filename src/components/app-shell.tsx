@@ -51,14 +51,14 @@ export function AppShell({ children, perfil }: {
         <Sidebar perfil={perfil} mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
         <div className="flex-1 min-w-0 flex flex-col">
           <header
-            className="lg:hidden sticky top-0 z-30 flex items-center gap-3 px-4 h-14 border-b"
-            style={{ background: "var(--canvas)", borderColor: "var(--line)" }}
+            className="lg:hidden sticky top-0 flex items-center gap-3 px-4 h-14 border-b"
+            style={{ background: "var(--canvas)", borderColor: "var(--line)", zIndex: "var(--z-header)" }}
           >
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
               aria-label="Abrir menu"
-              className="flex items-center justify-center h-9 w-9 rounded-md border text-[18px] leading-none"
+              className="flex items-center justify-center h-11 w-11 rounded-md border text-[18px] leading-none"
               style={{ borderColor: "var(--line)", color: "var(--ink)", background: "var(--surface)" }}
             >
               ☰
@@ -81,8 +81,8 @@ export function AppShell({ children, perfil }: {
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden">
       <header
-        className="sticky top-0 z-30 flex items-center gap-3 px-4 sm:px-8 h-14 border-b"
-        style={{ background: "var(--canvas)", borderColor: "var(--line)" }}
+        className="sticky top-0 flex items-center gap-3 px-4 sm:px-8 h-14 border-b"
+        style={{ background: "var(--canvas)", borderColor: "var(--line)", zIndex: "var(--z-header)" }}
       >
         <Link href="/"
           className="flex items-center gap-2 text-[13px] transition-opacity hover:opacity-70"

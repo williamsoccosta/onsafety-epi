@@ -121,7 +121,7 @@ export function FiltroColuna({
             position: "absolute",
             top: "calc(100% + 4px)",
             [align === "right" ? "right" : "left"]: 0,
-            zIndex: 50,
+            zIndex: "var(--z-dropdown)",
             minWidth: 220,
             background: "var(--surface-raised)",
             border: "1px solid var(--line)",
