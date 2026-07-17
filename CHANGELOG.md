@@ -10,6 +10,7 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/). 
 - Cadastro de funcionário (`/rh/novo`): telefone passa a ser obrigatório na etapa 1 (e-mail continua opcional), alinhado à decisão de negócio do hub de pessoas físicas.
 - Cadastro de funcionário: CPF duplicado é checado antes de persistir, com aviso no topo do formulário e link direto para a ficha já existente.
 - Discovery, PRD e regras de negócio da feature "Kit de EPI por Função" (`docs/prd-kit-por-funcao.md`, `docs/regras-negocio-kit-por-funcao.md`) — ainda em desenho, não implementado.
+- Planos de execução 006 (schema `epi.kit_funcao` + cálculo de kit incompleto) e 007 (UI "Kit sugerido" em nova entrega, stub tipado) em `plans/`, prontos pra execução — código ainda não escrito.
 
 ### Fixed
 - Cadastro de funcionário (`/rh/novo`): foco visível restaurado em todos os campos e botões (`outline-none` sem substituto violava design.md e WCAG 2.4.7), contraste do rótulo dos campos corrigido (3.42:1 → ~6.9:1, AA), alvos de toque elevados para 44px, legenda de campos obrigatórios adicionada e estado de carregamento do submit anunciado a leitor de tela.
