@@ -19,12 +19,14 @@ effort but was not written as a plan here — see "Not yet planned" below.
 | 003 | Guard JSON item-list parse against non-arrays | P2 | S | — | TODO |
 | 004 | Extract shared `useSignatureCanvas` hook | P2 | M | — | TODO |
 | 005 | Centralize movement-motivo constants | P3 | S | — | TODO |
+| 006 | `epi.kit_funcao` schema + cálculo de "kit incompleto" | P2 | M | — | TODO |
+| 007 | "Kit sugerido" — bloco de UI na tela de nova entrega (stub, sem schema) | P2 | M | 006 (o plano roda isolado com stub, mas só vira feature real depois de 006) | TODO |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (reason) | REJECTED (rationale)
 
 ## Dependency notes
 
-- No hard dependencies between plans. But 001, 002, 003, and 005 all edit
+- No hard dependencies between plans 001-005. But 001, 002, 003, and 005 all edit
   `src/app/movimentacoes/actions.ts` in **different regions** (001: top of two
   functions; 002: the upload block; 003: the JSON parse block; 005: the
   top-of-file constants). To avoid merge friction when done sequentially, land
@@ -32,6 +34,11 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (reason) | REJECTED (rational
   go anytime.
 - If a Vitest setup lands later, each plan's "Test plan" section says which
   tests to add retroactively.
+- **006 → 007**: 007 (UI) can execute standalone using a stub lookup function
+  (`src/lib/kit-funcao-stub.ts`) — it does not need 006's schema to compile or
+  run. But the feature isn't truthful/demoable until 006 lands and the stub's
+  body is swapped for a real query against `epi.kit_funcao`. Land 006 first if
+  possible to avoid shipping a UI that always shows "sem-kit".
 
 ## Findings considered and rejected
 
