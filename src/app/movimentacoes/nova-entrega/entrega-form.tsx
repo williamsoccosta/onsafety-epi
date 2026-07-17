@@ -1,12 +1,13 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { registrarEntregaComAssinatura } from "../actions";
 import { useSignatureCanvas } from "@/hooks/useSignatureCanvas";
+import { buscarKitPorFuncao, type KitFuncaoResultado } from "@/lib/kit-funcao-stub";
 
 type Obra  = { id: string; nome: string };
 type EPI   = { id: string; nome: string; complemento: string | null; ca: number | null };
-type Colab = { id: string; nome: string; matricula: string | null };
+type Colab = { id: string; nome: string; matricula: string | null; funcao: string | null };
 type ItemEntrega = { epi_id: string; quantidade: number };
 
 export function EntregaForm({
@@ -19,6 +20,23 @@ export function EntregaForm({
   const [assinado, setAssinado] = useState(false);
   const [erro,     setErro]     = useState<string | null>(null);
   const [loading,  setLoading]  = useState(false);
+
+  const [colaboradorId, setColaboradorId] = useState("");
+  const [kit, setKit] = useState<KitFuncaoResultado | null>(null);
+  const [kitLoading, setKitLoading] = useState(false);
+
+  useEffect(() => {
+    if (!colaboradorId) return;
+    const colab = colaboradores.find((c) => c.id === colaboradorId);
+    // Inicia o fetch do kit sugerido ao trocar de colaborador — setState
+    // sincrono aqui e intencional (mesmo padrao de src/components/sidebar.tsx).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setKitLoading(true);
+    buscarKitPorFuncao(colab?.funcao ?? null, colaboradorId)
+      .then(setKit)
+      .catch(() => setKit({ estado: "erro", mensagem: "Falha ao buscar kit sugerido." }))
+      .finally(() => setKitLoading(false));
+  }, [colaboradorId, colaboradores]);
 
   function epiLabel(e: EPI) {
     return e.nome
@@ -34,6 +52,20 @@ export function EntregaForm({
   }
   function removeItem(idx: number) {
     setItens((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev));
+  }
+
+  function preencherComKit() {
+    if (kit?.estado !== "encontrado") return;
+    const pendentes = kit.itens.filter((i) => i.status === "pendente");
+    const jaNaLista = new Set(itens.map((i) => i.epi_id).filter(Boolean));
+    const novos = pendentes.filter((i) => !jaNaLista.has(i.epi_id));
+    if (novos.length === 0) return;
+    setItens((prev) => {
+      // reaproveita a primeira linha vazia (epi_id === "") em vez de duplicar,
+      // depois empilha o restante -- mantem o padrao de addItem()
+      const semVazias = prev.filter((it) => it.epi_id !== "");
+      return [...semVazias, ...novos.map((n) => ({ epi_id: n.epi_id, quantidade: 1 }))];
+    });
   }
 
   function limpar() {
@@ -72,6 +104,12 @@ export function EntregaForm({
     }
   }
 
+  const kitPendentes = kit?.estado === "encontrado"
+    ? kit.itens.filter((i) => i.status === "pendente")
+    : [];
+  const kitCompleto = kit?.estado === "encontrado" && kitPendentes.length === 0;
+  const kitParcial = kit?.estado === "encontrado" && kitPendentes.length > 0;
+
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
 
@@ -92,15 +130,38 @@ export function EntregaForm({
             <option value="Entrega">Entrega</option>
             <option value="Substituicao">Substituicao</option>
           </Field>
-          <Field label="Colaborador" name="colaborador_id" required>
-            <option value="">Selecione...</option>
-            {colaboradores.map((col) => (
-              <option key={col.id} value={col.id}>
-                {col.nome}
-                {col.matricula ? " · " + col.matricula : ""}
-              </option>
-            ))}
-          </Field>
+          <label className="flex flex-col gap-1.5">
+            <span
+              className="text-[11px] font-medium uppercase tracking-[0.08em]"
+              style={{ color: "var(--ink-tertiary)" }}
+            >
+              Colaborador
+            </span>
+            <select
+              name="colaborador_id"
+              required
+              value={colaboradorId}
+              onChange={(e) => {
+                const v = e.target.value;
+                setColaboradorId(v);
+                if (!v) setKit(null);
+              }}
+              className="h-[38px] rounded-md border px-3 text-[13px] outline-none"
+              style={{
+                background: "var(--control-bg)",
+                borderColor: "var(--control-border)",
+                color: "var(--ink)",
+              }}
+            >
+              <option value="">Selecione...</option>
+              {colaboradores.map((col) => (
+                <option key={col.id} value={col.id}>
+                  {col.nome}
+                  {col.matricula ? " · " + col.matricula : ""}
+                </option>
+              ))}
+            </select>
+          </label>
           <Field label="Obra" name="obra_id" required>
             <option value="">Selecione...</option>
             {obras.map((o) => (
@@ -127,6 +188,82 @@ export function EntregaForm({
             }}
           />
         </div>
+
+        {colaboradorId && (
+          <div
+            className="pt-4 mt-1"
+            style={{ borderTop: "1px solid var(--line)" }}
+            aria-live="polite"
+          >
+            <p
+              className="text-[11px] font-semibold uppercase tracking-[0.12em] mb-2"
+              style={{ color: "var(--ink-tertiary)" }}
+            >
+              Kit sugerido
+            </p>
+
+            {kitLoading && (
+              <p className="text-[13px]" style={{ color: "var(--ink-muted)" }}>
+                Buscando kit sugerido...
+              </p>
+            )}
+
+            {!kitLoading && kit?.estado === "sem-kit" && (
+              <p className="text-[13px]" style={{ color: "var(--ink-muted)" }}>
+                Funcao sem kit cadastrado.
+              </p>
+            )}
+
+            {!kitLoading && kit?.estado === "erro" && (
+              <p className="text-[13px]" style={{ color: "var(--danger)" }}>
+                {kit.mensagem}
+              </p>
+            )}
+
+            {!kitLoading && kit?.estado === "encontrado" && (
+              <div className="space-y-2">
+                {kitCompleto && (
+                  <span role="status" className="selo selo--ok">Kit completo</span>
+                )}
+                {kitParcial && (
+                  <span role="status" className="selo selo--alert">
+                    {kitPendentes.length} pendente{kitPendentes.length > 1 ? "s" : ""}
+                  </span>
+                )}
+
+                <div className="space-y-1">
+                  {kit.itens.map((item) => (
+                    <div
+                      key={item.epi_id}
+                      className="flex items-center justify-between px-3 py-2 rounded-md text-[13px]"
+                      style={{ background: "var(--surface-raised)", color: "var(--ink)" }}
+                    >
+                      <span>{item.nome}</span>
+                      <span
+                        className="text-[11px]"
+                        style={{ color: item.status === "pendente" ? "var(--danger)" : "var(--ink-tertiary)" }}
+                      >
+                        {item.status === "pendente" ? "Pendente" : "Ja entregue"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {kitParcial && (
+                  <button
+                    type="button"
+                    onClick={preencherComKit}
+                    aria-label="Preencher lista de itens com o kit sugerido"
+                    className="h-11 min-w-[44px] px-4 mt-2 rounded-md text-[12px] font-semibold border transition-colors campo-foco"
+                    style={{ borderColor: "var(--accent)", color: "var(--accent)" }}
+                  >
+                    Preencher com kit sugerido
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Itens da entrega */}

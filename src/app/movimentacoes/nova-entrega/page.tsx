@@ -11,7 +11,7 @@ export default async function EntregaEpiPage() {
     supabase.schema("epi").from("itens")
       .select("id,nome,complemento,ca").eq("ativo", true).order("nome"),
     supabase.schema("epi").from("colaboradores")
-      .select("id,nome,matricula").eq("ativo", true).order("nome"),
+      .select("id,nome,matricula,funcao").eq("ativo", true).order("nome"),
   ]);
 
   return (
