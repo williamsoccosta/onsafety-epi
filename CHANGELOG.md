@@ -9,9 +9,14 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/). 
 ### Added
 - Cadastro de funcionário (`/rh/novo`): telefone passa a ser obrigatório na etapa 1 (e-mail continua opcional), alinhado à decisão de negócio do hub de pessoas físicas.
 - Cadastro de funcionário: CPF duplicado é checado antes de persistir, com aviso no topo do formulário e link direto para a ficha já existente.
+- Discovery, PRD e regras de negócio da feature "Kit de EPI por Função" (`docs/prd-kit-por-funcao.md`, `docs/regras-negocio-kit-por-funcao.md`) — ainda em desenho, não implementado.
 
 ### Fixed
 - Cadastro de funcionário (`/rh/novo`): foco visível restaurado em todos os campos e botões (`outline-none` sem substituto violava design.md e WCAG 2.4.7), contraste do rótulo dos campos corrigido (3.42:1 → ~6.9:1, AA), alvos de toque elevados para 44px, legenda de campos obrigatórios adicionada e estado de carregamento do submit anunciado a leitor de tela.
+- Sidebar: `aria-label` no botão de colapsar, `aria-current="page"` no item de navegação ativo, tecla Escape fecha o menu mobile com foco preso, alvo de toque de 28px para 36px. Filtro de coluna: `aria-expanded`/`aria-haspopup` no gatilho, `aria-label` no campo de busca, `role="listbox"`/`"option"` no dropdown de opções, `outline-none` removido (restaura foco visível nativo).
+- Tokens de z-index (`--z-header`/`--z-overlay`/`--z-dropdown`) substituem números soltos em `app-shell`/`sidebar`/`filtro-coluna`; botões-ícone elevados de 36px para 44px (WCAG 2.5.5).
+- Assinatura do colaborador ganha modo alternativo "Digitar nome" ao lado do desenho no canvas, para quem não consegue assinar com mouse/touch (WCAG 1.1.1).
+- Formulários de login, cadastro de EPI, cadastro de usuário e movimentação: labels associados aos campos, foco visível (`campo-foco`), alvo de toque 44px, `role="alert"` em mensagens de erro/status.
 
 ## [0.3.1] - 2026-07-10
 
