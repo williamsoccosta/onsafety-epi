@@ -10,7 +10,8 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/). 
 - Cadastro de funcionário (`/rh/novo`): telefone passa a ser obrigatório na etapa 1 (e-mail continua opcional), alinhado à decisão de negócio do hub de pessoas físicas.
 - Cadastro de funcionário: CPF duplicado é checado antes de persistir, com aviso no topo do formulário e link direto para a ficha já existente.
 - Discovery, PRD e regras de negócio da feature "Kit de EPI por Função" (`docs/prd-kit-por-funcao.md`, `docs/regras-negocio-kit-por-funcao.md`) — ainda em desenho, não implementado.
-- Planos de execução 006 (schema `epi.kit_funcao` + cálculo de kit incompleto) e 007 (UI "Kit sugerido" em nova entrega, stub tipado) em `plans/`, prontos pra execução — código ainda não escrito.
+- Plano de execução 006 (schema `epi.kit_funcao` + cálculo de kit incompleto) em `plans/`, pronto pra execução — código ainda não escrito, aguardando credencial de banco pra rodar o diagnóstico do Step 0.
+- Plano 007 (UI "Kit sugerido" em nova entrega) executado: bloco com os 5 estados (loading/vazio/completo/parcial/erro) na tela de nova entrega, usando `src/lib/kit-funcao-stub.ts` (sempre retorna "sem-kit" até o plano 006 landar). Ainda pendente: validação visual manual em produção.
 
 ### Fixed
 - Cadastro de funcionário (`/rh/novo`): foco visível restaurado em todos os campos e botões (`outline-none` sem substituto violava design.md e WCAG 2.4.7), contraste do rótulo dos campos corrigido (3.42:1 → ~6.9:1, AA), alvos de toque elevados para 44px, legenda de campos obrigatórios adicionada e estado de carregamento do submit anunciado a leitor de tela.
@@ -18,6 +19,7 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/). 
 - Tokens de z-index (`--z-header`/`--z-overlay`/`--z-dropdown`) substituem números soltos em `app-shell`/`sidebar`/`filtro-coluna`; botões-ícone elevados de 36px para 44px (WCAG 2.5.5).
 - Assinatura do colaborador ganha modo alternativo "Digitar nome" ao lado do desenho no canvas, para quem não consegue assinar com mouse/touch (WCAG 1.1.1).
 - Formulários de login, cadastro de EPI, cadastro de usuário e movimentação: labels associados aos campos, foco visível (`campo-foco`), alvo de toque 44px, `role="alert"` em mensagens de erro/status.
+- 5 warnings reais de lint corrigidos (imports não usados em `colaboradores/page.tsx`, `rh/[id]/page.tsx`, `app-shell.tsx`; `<img>` documentado com eslint-disable por depender de URL externa do Storage; parâmetro reservado em `kit-funcao-stub.ts`). `eslint.config.mjs` passa a ignorar `.claude/worktrees/**`, que inflava a contagem de erros do lint com código de outra branch.
 
 ## [0.3.1] - 2026-07-10
 
