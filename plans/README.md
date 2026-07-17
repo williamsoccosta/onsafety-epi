@@ -20,7 +20,7 @@ effort but was not written as a plan here — see "Not yet planned" below.
 | 004 | Extract shared `useSignatureCanvas` hook | P2 | M | — | TODO |
 | 005 | Centralize movement-motivo constants | P3 | S | — | TODO |
 | 006 | `epi.kit_funcao` schema + cálculo de "kit incompleto" | P2 | M | — | TODO |
-| 007 | "Kit sugerido" — bloco de UI na tela de nova entrega (stub, sem schema) | P2 | M | 006 (o plano roda isolado com stub, mas só vira feature real depois de 006) | IN PROGRESS (código implementado e commitado; `npm run build` e validação visual manual — Step 5 — pendentes, deixados a cargo do orquestrador antes do deploy) |
+| 007 | "Kit sugerido" — bloco de UI na tela de nova entrega (stub, sem schema) | P2 | M | 006 (o plano roda isolado com stub, mas só vira feature real depois de 006) | IN PROGRESS (build ok, deploy em producao ec6c369, pm2 online sem restart instavel; falta so validacao visual manual do Step 5 — precisa login real, fora do meu alcance) |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (reason) | REJECTED (rationale)
 
