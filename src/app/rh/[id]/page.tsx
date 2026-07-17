@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { requirePerfil, getPerfilAtual } from "@/lib/auth";
+import { getPerfilAtual } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 

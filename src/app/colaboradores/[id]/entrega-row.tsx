@@ -26,6 +26,7 @@ export function ColunaAssinatura({ movimentacaoId, colaboradorId, assinaturaUrl 
   if (url) {
     return (
       <div className="relative inline-block print:block group">
+        {/* eslint-disable-next-line @next/next/no-img-element -- assinatura vinda de URL externa do Supabase Storage; next/image exigiria configurar remotePatterns */}
         <img
           src={url}
           alt="Assinatura"

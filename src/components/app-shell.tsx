@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Sidebar } from "./sidebar";
-import type { PerfilUsuario, Perfil } from "@/lib/types";
+import type { PerfilUsuario } from "@/lib/types";
 import Link from "next/link";
 
 const NO_SHELL_PATHS = ["/login"];

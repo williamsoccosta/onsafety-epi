@@ -22,6 +22,7 @@ export type KitFuncaoResultado =
  */
 export async function buscarKitPorFuncao(
   funcao: string | null,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- reservado para a implementacao real (plan 006), que fara a query Supabase por colaborador; mantido na assinatura para nao quebrar o contrato ja documentado
   colaboradorId: string
 ): Promise<KitFuncaoResultado> {
   // Stub determinístico — sem chamada de rede, sem tabela real.

@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Worktrees paralelos de outras sessoes (.claude/worktrees/**) nao fazem
+    // parte do escopo deste branch e nao devem ser lintados aqui.
+    ".claude/worktrees/**",
   ]),
 ]);
 

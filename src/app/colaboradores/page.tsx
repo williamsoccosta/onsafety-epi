@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { criarColaborador, alternarAtivo } from "./actions";
-import { Selo, SeloBotao } from "@/components/selo";
+import { SeloBotao } from "@/components/selo";
 import { CabecalhoPagina } from "@/components/page-header";
 import Link from "next/link";
 
